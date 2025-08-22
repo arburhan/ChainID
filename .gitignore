@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+dist/
+build/
+.cache/
+coverage/
+.DS_Store
+hardhat-cache/
+hardhat-artifacts/
+artifacts/
+frontend/.vite/
+backend/logs/
