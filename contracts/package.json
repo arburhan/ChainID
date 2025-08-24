@@ -7,7 +7,10 @@
     "compile": "hardhat compile",
     "clean": "hardhat clean",
     "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
-    "test": "hardhat test"
+    "deploy:local": "hardhat run scripts/deploy-local.ts --network localhost",
+    "deploy:hardhat": "hardhat run scripts/deploy-hardhat.ts",
+    "test": "hardhat test",
+    "node": "hardhat node"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",

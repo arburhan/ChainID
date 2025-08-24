@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { registerHandler } from "../services/register.ts";
-import { issueCredentialHandler } from "../services/credential.ts";
-import { requestAccessHandler, consentHandler } from "../services/access.ts";
-import { verifyCredentialHandler } from "../services/verify.ts";
+import { registerHandler } from "../services/register";
+import { issueCredentialHandler } from "../services/credential";
+import { requestAccessHandler, consentHandler } from "../services/access";
+import { verifyCredentialHandler } from "../services/verify";
 
 export const apiRouter = Router();
 

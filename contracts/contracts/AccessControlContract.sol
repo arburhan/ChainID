@@ -49,7 +49,7 @@ contract AccessControlContract is Ownable {
         AccessRequest storage req = requestOf[requestId];
         require(req.subject == msg.sender, "Not subject");
         require(!req.approved, "Already approved");
-        bytes32 ethHash = ECDSA.toEthSignedMessageHash(requestId);
+        bytes32 ethHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", requestId));
         address signer = ECDSA.recover(ethHash, signature);
         require(signer == msg.sender, "Bad signature");
         if (address(zkVerifier) != address(0) && optionalProof.length > 0) {

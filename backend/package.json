@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm src/index.ts\"",
+    "dev": "nodemon --watch src --ext ts --exec \"tsx src/index.ts\"",
     "start": "node dist/index.js",
     "build": "tsc -p ."
   },
@@ -12,7 +12,7 @@
     "axios": "^1.6.8",
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
-    "ethers": "^6.12.1",
+    "ethers": "^6.15.0",
     "express": "^4.18.3",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
@@ -25,6 +25,7 @@
     "@types/node": "^20.11.0",
     "nodemon": "^3.1.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.5",
     "typescript": "^5.4.0"
   }
 }

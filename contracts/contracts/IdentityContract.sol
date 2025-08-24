@@ -26,6 +26,10 @@ contract IdentityContract is Ownable, AccessControl {
         _grantRole(GOVERNMENT_ROLE, initialOwner);
     }
 
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
+
     function registerDID(bytes32 profileHash) external {
         require(didOf[msg.sender].owner == address(0), "DID exists");
         didOf[msg.sender] = DID({ owner: msg.sender, profileHash: profileHash, registeredAt: block.timestamp });

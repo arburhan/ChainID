@@ -1,28 +1,59 @@
-import dotenv from "dotenv";
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import mongoose from "mongoose";
-import { apiRouter } from "./routes/api.ts";
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import contractRoutes from './routes/contracts';
+import { apiRouter } from './routes/api';
 
-dotenv.config({ path: "../.env" });
+// Load environment variables
+dotenv.config();
 
 const app = express();
-app.use(helmet());
+const PORT = process.env.PORT || 3000;
+
+// Middleware
 app.use(cors());
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
-const MONGO_URI = process.env.MONGO_URI || "";
-
-async function start() {
-    if (!MONGO_URI) throw new Error("Missing MONGO_URI");
-    await mongoose.connect(MONGO_URI);
-    app.use("/", apiRouter);
-    app.listen(PORT, () => console.log(`API listening on ${PORT}`));
-}
-
-start().catch((e) => {
-    console.error(e);
-    process.exit(1);
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
+
+// Contract routes
+app.use('/api/contracts', contractRoutes);
+
+// Other API routes
+app.use('/api', apiRouter);
+
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Error:', err);
+  res.status(500).json({ 
+    success: false, 
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    success: false, 
+    error: 'Route not found' 
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 ChainID Backend Server running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  console.log(`📋 Contract API: http://localhost:${PORT}/api/contracts`);
+});
+
+export default app;

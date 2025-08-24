@@ -25,6 +25,10 @@ contract CredentialContract is ERC721URIStorage, AccessControl {
         _grantRole(REVOKER_ROLE, msg.sender);
     }
 
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721URIStorage, AccessControl) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
+
     function issue(address to, bytes32 credentialHash, string memory uri) external returns (uint256) {
         require(identity.hasRole(identity.ISSUER_ROLE(), msg.sender), "Not issuer");
         uint256 tokenId = ++nextTokenId;
