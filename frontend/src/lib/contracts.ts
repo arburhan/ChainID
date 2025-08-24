@@ -1,19 +1,19 @@
 import { ethers } from 'ethers';
 
-// Contract ABIs - Import from the contracts folder
-import identityABI from '../../contracts/abi/identity.json';
-import credentialsABI from '../../contracts/abi/credentialsCntract.json';
-import accessControlABI from '../../contracts/abi/accessControl.json';
-import auditControlABI from '../../contracts/abi/auditControl.json';
-import mockVerifierABI from '../../contracts/abi/mockVerifier.json';
+// Contract ABIs - Import from the local abi folder
+import identityABI from '../abi/identity.json';
+import credentialsABI from '../abi/credentialsCntract.json';
+import accessControlABI from '../abi/accessControl.json';
+import auditControlABI from '../abi/auditControl.json';
+import mockVerifierABI from '../abi/mockVerifier.json';
 
 // Contract addresses (will be loaded from environment or API)
 export const CONTRACT_ADDRESSES = {
-  IDENTITY: process.env.REACT_APP_IDENTITY_CONTRACT_ADDRESS || '',
-  CREDENTIAL: process.env.REACT_APP_CREDENTIAL_CONTRACT_ADDRESS || '',
-  ACCESS_CONTROL: process.env.REACT_APP_ACCESS_CONTROL_CONTRACT_ADDRESS || '',
-  AUDIT: process.env.REACT_APP_AUDIT_CONTRACT_ADDRESS || '',
-  MOCK_VERIFIER: process.env.REACT_APP_MOCK_VERIFIER_ADDRESS || ''
+  IDENTITY: import.meta.env.VITE_IDENTITY_CONTRACT_ADDRESS || '',
+  CREDENTIAL: import.meta.env.VITE_CREDENTIAL_CONTRACT_ADDRESS || '',
+  ACCESS_CONTROL: import.meta.env.VITE_ACCESS_CONTROL_CONTRACT_ADDRESS || '',
+  AUDIT: import.meta.env.VITE_AUDIT_CONTRACT_ADDRESS || '',
+  MOCK_VERIFIER: import.meta.env.VITE_MOCK_VERIFIER_ADDRESS || ''
 };
 
 // Contract ABIs
@@ -65,7 +65,7 @@ export const contractInteractions = {
   // Identity Contract
   async registerDID(contract: ethers.Contract, profileHash: string, signer: ethers.Signer) {
     try {
-      const tx = await contract.connect(signer).registerDID(profileHash);
+      const tx = await (contract as any).connect(signer).registerDID(profileHash);
       return await tx.wait();
     } catch (error) {
       console.error('Error registering DID:', error);
@@ -75,7 +75,7 @@ export const contractInteractions = {
 
   async addIssuer(contract: ethers.Contract, account: string, signer: ethers.Signer) {
     try {
-      const tx = await contract.connect(signer).addIssuer(account);
+      const tx = await (contract as any).connect(signer).addIssuer(account);
       return await tx.wait();
     } catch (error) {
       console.error('Error adding issuer:', error);
@@ -85,7 +85,7 @@ export const contractInteractions = {
 
   async isRegistered(contract: ethers.Contract, user: string) {
     try {
-      return await contract.isRegistered(user);
+      return await (contract as any).isRegistered(user);
     } catch (error) {
       console.error('Error checking registration:', error);
       throw error;
@@ -95,7 +95,7 @@ export const contractInteractions = {
   // Credential Contract
   async issueCredential(contract: ethers.Contract, to: string, credentialHash: string, uri: string, signer: ethers.Signer) {
     try {
-      const tx = await contract.connect(signer).issue(to, credentialHash, uri);
+      const tx = await (contract as any).connect(signer).issue(to, credentialHash, uri);
       return await tx.wait();
     } catch (error) {
       console.error('Error issuing credential:', error);
@@ -105,7 +105,7 @@ export const contractInteractions = {
 
   async revokeCredential(contract: ethers.Contract, tokenId: number, signer: ethers.Signer) {
     try {
-      const tx = await contract.connect(signer).revoke(tokenId);
+      const tx = await (contract as any).connect(signer).revoke(tokenId);
       return await tx.wait();
     } catch (error) {
       console.error('Error revoking credential:', error);
@@ -116,7 +116,7 @@ export const contractInteractions = {
   // Access Control Contract
   async requestAccess(contract: ethers.Contract, subject: string, purposeHash: string, signer: ethers.Signer) {
     try {
-      const tx = await contract.connect(signer).requestAccess(subject, purposeHash);
+      const tx = await (contract as any).connect(signer).requestAccess(subject, purposeHash);
       const receipt = await tx.wait();
       // Extract requestId from events
       const event = receipt.logs.find((log: any) => log.eventName === 'AccessRequested');
@@ -129,7 +129,7 @@ export const contractInteractions = {
 
   async approveAccess(contract: ethers.Contract, requestId: string, signature: string, proof: string, signer: ethers.Signer) {
     try {
-      const tx = await contract.connect(signer).approve(requestId, signature, proof || '0x');
+      const tx = await (contract as any).connect(signer).approve(requestId, signature, proof || '0x');
       return await tx.wait();
     } catch (error) {
       console.error('Error approving access:', error);
@@ -140,7 +140,7 @@ export const contractInteractions = {
   // Mock Verifier
   async verifyProof(contract: ethers.Contract, proof: string, signalHash: string) {
     try {
-      return await contract.verify(proof, signalHash);
+      return await (contract as any).verify(proof, signalHash);
     } catch (error) {
       console.error('Error verifying proof:', error);
       throw error;
@@ -157,7 +157,7 @@ export const utils = {
 
   // Generate random bytes32 hash
   randomBytes32: (): string => {
-    return ethers.randomBytes(32);
+    return ethers.hexlify(ethers.randomBytes(32));
   },
 
   // Format address

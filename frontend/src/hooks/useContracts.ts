@@ -45,8 +45,8 @@ export const useContracts = (): UseContractsReturn => {
 
   // Initialize provider
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
       setState(prev => ({ ...prev, provider }));
     }
   }, []);
@@ -59,8 +59,8 @@ export const useContracts = (): UseContractsReturn => {
       }
 
       // Request account access
-      const accounts = await state.provider.send('eth_requestAccounts', []);
-      const signer = await state.provider.getSigner();
+      const accounts = await (state.provider as any).send('eth_requestAccounts', []);
+      const signer = await (state.provider as any).getSigner();
       const address = await signer.getAddress();
       const balance = await state.provider.getBalance(address);
 
@@ -171,7 +171,7 @@ export const useContracts = (): UseContractsReturn => {
 
   // Listen for account changes
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.ethereum) {
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
       const handleAccountsChanged = (accounts: string[]) => {
         if (accounts.length === 0) {
           disconnectWallet();
@@ -184,12 +184,12 @@ export const useContracts = (): UseContractsReturn => {
         window.location.reload();
       };
 
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
+      (window as any).ethereum.on('accountsChanged', handleAccountsChanged);
+      (window as any).ethereum.on('chainChanged', handleChainChanged);
 
       return () => {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
+        (window as any).ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        (window as any).ethereum.removeListener('chainChanged', handleChainChanged);
       };
     }
   }, [state.address, connectWallet, disconnectWallet]);
