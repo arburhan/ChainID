@@ -2,14 +2,18 @@ import { ethers } from 'ethers';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import * as dotenv from 'dotenv';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+dotenv.config();
+
+
 // Load ABI files - path should be relative to backend root
 const loadABI = (contractName: string) => {
-  const abiPath = path.join(__dirname, '..', '..', 'contracts', 'abi', `${contractName}.json`);
+  const abiPath = path.join(__dirname, '..', 'abi', `${contractName}.json`);
   try {
     const abiData = fs.readFileSync(abiPath, 'utf8');
     return JSON.parse(abiData);
@@ -29,7 +33,7 @@ const MOCK_VERIFIER_ABI = loadABI('mockVerifier');
 export class ContractService {
   private provider: ethers.JsonRpcProvider;
   private signer: ethers.Wallet;
-  
+
   // Contract instances
   public identityContract: ethers.Contract;
   public credentialContract: ethers.Contract;
@@ -39,11 +43,26 @@ export class ContractService {
 
   constructor() {
     // Initialize provider and signer
-    const rpcUrl = process.env.NETWORK_RPC_URL || 'https://sepolia.infura.io/v3/YOUR_PROJECT_ID';
-    const privateKey = process.env.WALLET_PRIVATE_KEY || '';
-    
+    const rpcUrl = process.env.SEPOLIA_RPC_URL;
+    const privateKey = (process.env.WALLET_PRIVATE_KEY || '').trim();
+
+    console.log('Environment check:');
+    console.log('- SEPOLIA_RPC_URL:', rpcUrl || 'Not Set');
+    console.log('- WALLET_PRIVATE_KEY length:', privateKey ? privateKey.length : 0);
+    console.log('- WALLET_PRIVATE_KEY starts with 0x:', privateKey ? privateKey.startsWith('0x') : false);
+    console.log('- Available env vars:', Object.keys(process.env).filter(key => key.includes('RPC') || key.includes('KEY') || key.includes('ADDRESS')));
+
+    if (!rpcUrl) {
+      throw new Error('SEPOLIA_RPC_URL or NETWORK_RPC_URL environment variable is required');
+    }
+
     if (!privateKey) {
-      throw new Error('WALLET_PRIVATE_KEY is required');
+      throw new Error('WALLET_PRIVATE_KEY environment variable is required. Please set it in your environment or create a .env file.');
+    }
+
+    // Validate private key format
+    if (!privateKey.startsWith('0x') || privateKey.length !== 66) {
+      throw new Error(`Invalid private key format. Expected 64 hex characters with 0x prefix, got length ${privateKey.length}. Current value: ${privateKey.substring(0, 10)}...`);
     }
 
     this.provider = new ethers.JsonRpcProvider(rpcUrl);
