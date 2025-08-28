@@ -1,11 +1,11 @@
 import { ethers } from 'ethers';
 
 // Contract ABIs - Import from the local abi folder
-import identityABI from '../abi/identity.json';
-import credentialsABI from '../abi/credentialsCntract.json';
-import accessControlABI from '../abi/accessControl.json';
-import auditControlABI from '../abi/auditControl.json';
-import mockVerifierABI from '../abi/mockVerifier.json';
+import identityABI from './abi/identity.json'
+import credentialsABI from './abi/credentialsCntract.json';
+import accessControlABI from './abi/accessControl.json';
+import auditControlABI from './abi/auditControl.json';
+import mockVerifierABI from './abi/mockVerifier.json';
 
 // Contract addresses (will be loaded from environment or API)
 export const CONTRACT_ADDRESSES = {

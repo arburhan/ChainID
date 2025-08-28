@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { verifyCredential } from '../lib/api'
+import { verifyCredential, verifyProfileHash } from '../lib/api'
 import { Link } from 'react-router-dom'
 
 // Icon components
@@ -33,8 +33,15 @@ export function Verify() {
     
     setIsLoading(true)
     try {
+      // First, check profileHash existence in DB
+      const dbCheck = await verifyProfileHash(tokenId)
+      if (!dbCheck?.verified) {
+        setResult({ error: 'Hash not found in database. Verification failed.' })
+        return
+      }
+      // Then, optionally verify on-chain credential (kept for future extension)
       const data = await verifyCredential(tokenId)
-      setResult(data)
+      setResult({ verified: true, db: dbCheck, chain: data })
     } catch (error) {
       console.error('Verification failed:', error)
       setResult({ error: 'Verification failed. Please check the token ID and try again.' })

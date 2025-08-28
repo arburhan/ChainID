@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { credential, identity } from "./eth.ts";
 import { ethers } from "ethers";
 import crypto from "crypto";
+import { AuditModel } from "../models/Audit";
 
 export async function issueCredentialHandler(req: Request, res: Response) {
   try {
@@ -24,6 +25,17 @@ export async function issueCredentialHandler(req: Request, res: Response) {
     const hash = "0x" + crypto.createHash("sha256").update(JSON.stringify(payload)).digest("hex");
     const tx = await credential.issue(checksummedAddress, hash, metadataURI);
     const receipt = await tx.wait();
+    try {
+      await AuditModel.create({
+        type: "ISSUE",
+        actor: await credential.signer.getAddress(),
+        subject: checksummedAddress,
+        txHash: receipt?.hash,
+        details: { hash, metadataURI }
+      });
+    } catch (e) {
+      console.error("Audit log failed:", e);
+    }
     res.json({ ok: true, txHash: receipt?.hash });
   } catch (e: any) {
     res.status(500).json({ error: e.message });

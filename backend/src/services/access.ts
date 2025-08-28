@@ -3,6 +3,7 @@ import { accessCtrl } from "./eth";
 import { ConsentModel } from "../models/Consent";
 import { ethers } from "ethers";
 import crypto from "crypto";
+import { AuditModel } from "../models/Audit";
 
 export async function requestAccessHandler(req: Request, res: Response) {
   try {
@@ -31,6 +32,18 @@ export async function requestAccessHandler(req: Request, res: Response) {
       purposeHash,
       approved: false
     });
+    try {
+      await AuditModel.create({
+        type: "ACCESS_REQUEST",
+        actor: checksummedRequester,
+        subject: checksummedSubject,
+        requestId: requestId || undefined,
+        txHash: rc?.hash,
+        details: { purposeHash }
+      });
+    } catch (e) {
+      console.error("Audit log failed:", e);
+    }
     res.json({ ok: true, txHash: rc?.hash, purposeHash, requestId });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
@@ -54,6 +67,17 @@ export async function consentHandler(req: Request, res: Response) {
     const receipt = await tx.wait();
 
     await ConsentModel.updateOne({ requestId }, { approved: true, signature });
+    try {
+      await AuditModel.create({
+        type: "ACCESS_APPROVE",
+        actor: subject,
+        requestId,
+        txHash: receipt?.hash,
+        details: { signature, optionalProof }
+      });
+    } catch (e) {
+      console.error("Audit log failed:", e);
+    }
     res.json({ ok: true, txHash: receipt?.hash });
   } catch (e: any) {
     res.status(500).json({ error: e.message });

@@ -226,7 +226,11 @@ export class ContractService {
         throw new Error('Recipient is a contract. Please use a wallet (EOA) address.');
       }
       const tx = await this.credentialContract.issue(checksummedAddress, credentialHash, uri);
-      return await tx.wait();
+      const receipt = await tx.wait();
+      // Try to parse CredentialIssued event for tokenId
+      const issuedLog = receipt.logs.find((log: any) => log.eventName === 'CredentialIssued');
+      const tokenId = issuedLog?.args?.tokenId?.toString?.() ?? null;
+      return { ...receipt, tokenId };
     } catch (error) {
       console.error('Error issuing credential:', error);
       throw error;

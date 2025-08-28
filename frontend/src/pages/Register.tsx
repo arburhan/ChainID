@@ -151,11 +151,50 @@ export function Register() {
 
           {/* Result Display */}
           {result && (
-            <div className="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Registration Result</h3>
-              <pre className="text-sm bg-white p-4 rounded-lg border overflow-x-auto">
+            <div className="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-200 text-black">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                Registration Result
+                {/* Copy Icon */}
+                <button
+                  type="button"
+                  className="ml-2 p-1 rounded hover:bg-gray-200"
+                  title="Copy to clipboard"
+                  onClick={() => {
+                    navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+                  }}
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="9" y="9" width="13" height="13" rx="2" strokeWidth="2" stroke="currentColor" />
+                    <rect x="3" y="3" width="13" height="13" rx="2" strokeWidth="2" stroke="currentColor" />
+                  </svg>
+                </button>
+                {/* Download Icon */}
+                <button
+                  type="button"
+                  className="ml-2 p-1 rounded hover:bg-gray-200"
+                  title="Download as .txt"
+                  onClick={() => {
+                    const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'registration_result.txt';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke="currentColor" strokeWidth="2" d="M12 16v-8m0 8l-4-4m4 4l4-4" />
+                    <rect x="4" y="4" width="16" height="16" rx="2" strokeWidth="2" stroke="currentColor" />
+                  </svg>
+                </button>
+              </h3>
+              <pre className="text-sm p-4 rounded-lg border overflow-x-auto">
                 {JSON.stringify(result, null, 2)}
               </pre>
+              <p className="text-red-500 font-bold">*Download this info for future use</p>
             </div>
           )}
         </div>

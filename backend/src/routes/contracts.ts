@@ -101,6 +101,18 @@ router.post('/credential/issue', async (req, res) => {
 
     const contractService = getContractService();
     const result = await contractService.issueCredential(to, credentialHash, uri);
+    try {
+      const { CredentialModel } = await import('../models/Credential');
+      await CredentialModel.create({
+        tokenId: result?.tokenId ?? '',
+        to,
+        credentialHash,
+        uri,
+        txHash: result?.hash ?? result?.transactionHash ?? ''
+      });
+    } catch (e) {
+      console.error('Failed to persist credential:', e);
+    }
     res.json({ success: true, transaction: result });
   } catch (error: any) {
     console.error('Error issuing credential:', error);

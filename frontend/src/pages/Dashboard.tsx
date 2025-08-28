@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { connectWallet } from '../lib/wallet'
-import { issueCredential, getSignerInfo, addIssuer } from '../lib/api'
+import { issueCredential, getSignerInfo, addIssuer, requestAccess } from '../lib/api'
+import { ethers } from 'ethers'
+import { CONTRACT_ABIS, CONTRACT_ADDRESSES, createContractInstance } from '../lib/contracts'
 import { Link } from 'react-router-dom'
 
 // Icon components
@@ -39,6 +41,14 @@ export function Dashboard() {
   const [isGranting, setIsGranting] = useState(false)
   const [issuerGranted, setIssuerGranted] = useState(false)
   const [issueSuccess, setIssueSuccess] = useState<{ hash?: string } | null>(null)
+  // Access request/approve state
+  const [subject, setSubject] = useState('')
+  const [purpose, setPurpose] = useState('{"reason":"KYC verification"}')
+  const [requestOut, setRequestOut] = useState<any>(null)
+  const [reqId, setReqId] = useState('')
+  const [signature, setSignature] = useState('')
+  const [proof, setProof] = useState('')
+  const [approveOut, setApproveOut] = useState<any>(null)
 
   async function onConnect() {
     setIsLoading(true)
@@ -95,6 +105,48 @@ export function Dashboard() {
       setIssueSuccess(null)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  async function onRequestAccess(e: React.FormEvent) {
+    e.preventDefault()
+    try {
+      const data = await requestAccess(address, subject, JSON.parse(purpose))
+      setRequestOut(data)
+      if (data?.requestId) setReqId(data.requestId)
+      // Auto-generate signature with subject wallet if available
+      try {
+        const eth: any = (window as any).ethereum
+        if (eth && data?.requestId && subject) {
+          const sig = await eth.request({
+            method: 'personal_sign',
+            params: [data.requestId, subject]
+          })
+          if (typeof sig === 'string') setSignature(sig)
+        }
+      } catch (_e) {
+        // Ignore if user rejects or provider not available; manual entry stays supported
+      }
+    } catch (error) {
+      console.error('Failed to request access:', error)
+      setRequestOut({ error: 'Failed to request access.' })
+    }
+  }
+
+  async function onApproveAccess(e: React.FormEvent) {
+    e.preventDefault()
+    try {
+      const eth: any = (window as any).ethereum
+      if (!eth) throw new Error('No wallet provider')
+      const provider = new ethers.BrowserProvider(eth)
+      const signer = await provider.getSigner()
+      const access = createContractInstance(CONTRACT_ADDRESSES.ACCESS_CONTROL, CONTRACT_ABIS.ACCESS_CONTROL, signer)
+      const tx = await (access as any).approve(reqId as any, signature as any, (proof && proof !== '') ? proof : '0x')
+      const receipt = await tx.wait()
+      setApproveOut({ success: true, transaction: receipt })
+    } catch (error) {
+      console.error('Failed to approve access:', error)
+      setApproveOut({ error: 'Failed to approve access.' })
     }
   }
 
@@ -306,6 +358,52 @@ export function Dashboard() {
                 setting up your digital identity or issuing credentials.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Access Request / Approve Section */}
+        <div className="grid gap-8 lg:grid-cols-2 mt-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Request Access</h2>
+            <form className="space-y-4" onSubmit={onRequestAccess}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Subject Address</label>
+                <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={subject} onChange={e => setSubject(e.target.value)} placeholder="0x..." required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Purpose (JSON)</label>
+                <textarea className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-mono text-sm" rows={3} value={purpose} onChange={e => setPurpose(e.target.value)} required />
+              </div>
+              <button className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-900 transition-all disabled:opacity-50" disabled={!address}>Request Access</button>
+            </form>
+            {requestOut && (
+              <div className="mt-4 p-3 rounded border bg-gray-50">
+                <pre className="text-xs text-gray-800 overflow-x-auto">{JSON.stringify(requestOut, null, 2)}</pre>
+              </div>
+            )}
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Approve Access</h2>
+            <form className="space-y-4" onSubmit={onApproveAccess}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Request ID</label>
+                <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={reqId} onChange={e => setReqId(e.target.value)} placeholder="0x..." required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Signature</label>
+                <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={signature} onChange={e => setSignature(e.target.value)} placeholder="0x..." required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Optional Proof (bytes hex)</label>
+                <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={proof} onChange={e => setProof(e.target.value)} placeholder="0x..." />
+              </div>
+              <button className="w-full bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-700 hover:to-green-900 transition-all disabled:opacity-50" disabled={!address}>Approve Access</button>
+            </form>
+            {approveOut && (
+              <div className="mt-4 p-3 rounded border bg-gray-50">
+                <pre className="text-xs text-gray-800 overflow-x-auto">{JSON.stringify(approveOut, null, 2)}</pre>
+              </div>
+            )}
           </div>
         </div>
       </div>

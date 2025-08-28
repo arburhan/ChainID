@@ -30,7 +30,9 @@ export async function addIssuer(account: string) {
 }
 
 export async function requestAccess(requester: string, subject: string, purpose: any) {
-  const { data } = await api.post('/api/contracts/access/request', { subject, purposeHash: purpose })
+  // Hash purpose JSON to bytes32 for on-chain call
+  const purposeHash = ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(purpose)))
+  const { data } = await api.post('/api/contracts/access/request', { subject, purposeHash })
   return data
 }
 
@@ -41,5 +43,10 @@ export async function consent(requestId: string, subject: string, signature: str
 
 export async function verifyCredential(tokenId: string) {
   const { data } = await api.post('/api/contracts/verifier/verify', { proof: tokenId, signalHash: tokenId })
+  return data
+}
+
+export async function verifyProfileHash(profileHash: string) {
+  const { data } = await api.post('/api/verifyProfileHash', { profileHash })
   return data
 }

@@ -4,6 +4,7 @@ import { ProfileModel } from "../models/Profile";
 import { identity } from "./eth";
 import { ethers } from "ethers";
 import crypto from "crypto";
+import { AuditModel } from "../models/Audit";
 
 export async function registerHandler(req: Request, res: Response) {
   try {
@@ -24,7 +25,7 @@ export async function registerHandler(req: Request, res: Response) {
     const profileHash = "0x" + crypto.createHash("sha256").update(JSON.stringify(enc)).digest("hex");
     console.log(profileHash);
 
-    await ProfileModel.findOneAndUpdate(
+    const upserted = await ProfileModel.findOneAndUpdate(
       { address: checksummedAddress },
       { address: checksummedAddress, profile: enc, profileHash },
       { upsert: true, new: true }
@@ -37,6 +38,16 @@ export async function registerHandler(req: Request, res: Response) {
       txHash = receipt?.hash;
     } catch (err: any) {
       console.error("Contract call failed:", err);
+    }
+    try {
+      await AuditModel.create({
+        type: "REGISTER",
+        actor: checksummedAddress,
+        txHash,
+        details: { profileHash, upserted: Boolean(upserted) }
+      });
+    } catch (e) {
+      console.error("Audit log failed:", e);
     }
     res.json({ ok: true, txHash, profileHash });
   } catch (e: any) {
