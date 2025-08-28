@@ -25,6 +25,7 @@ export function Verify() {
   const [tokenId, setTokenId] = useState('')
   const [result, setResult] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const isValidHexHash = (value: string) => /^0x[0-9a-fA-F]{64}$/.test(value.trim())
 
   async function onVerify(e: React.FormEvent) {
     e.preventDefault()
@@ -78,7 +79,7 @@ export function Verify() {
           <form className="space-y-6" onSubmit={onVerify}>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Credential Token ID
+                Profile Hash or Transaction Hash
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -86,21 +87,24 @@ export function Verify() {
                 </div>
                 <input 
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" 
-                  placeholder="Enter the credential token ID" 
+                  placeholder="Paste your profileHash or txHash (0x + 64 hex)" 
                   value={tokenId} 
                   onChange={e => setTokenId(e.target.value)}
                   required
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">
-                Enter the unique token ID associated with the credential you want to verify
+                আপনি আপনার identity তৈরি করার সময় যে <strong>profileHash</strong> পেয়েছেন বা <strong>txHash</strong> পেয়েছেন, সেটি এখানে পেস্ট করুন। বর্তমান ডেমো verifier non-empty hex input গ্রহণ করে।
               </p>
+              {!tokenId.trim() || isValidHexHash(tokenId) ? null : (
+                <p className="mt-1 text-sm text-red-600">ইনপুটটি 0x দিয়ে শুরু হওয়া 64-হেক্স ক্যারেক্টারের হওয়া উচিত।</p>
+              )}
             </div>
             
             <button 
               className="w-full bg-gradient-to-r from-purple-600 to-purple-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2" 
               type="submit"
-              disabled={isLoading || !tokenId.trim()}
+              disabled={isLoading || !isValidHexHash(tokenId)}
             >
               {isLoading ? (
                 <>

@@ -16,14 +16,27 @@ let _AUDIT_CONTROL_ABI: any = null;
 let _MOCK_VERIFIER_ABI: any = null;
 
 function loadABI(contractName: string) {
-  const abiPath = path.join(__dirname, '..', 'abi', `${contractName}.json`);
-  try {
-    const abiData = fs.readFileSync(abiPath, 'utf8');
-    return JSON.parse(abiData);
-  } catch (error) {
-    console.error(`Error loading ABI for ${contractName}:`, error);
-    throw new Error(`Failed to load ABI for ${contractName}`);
+  const candidates = [
+    path.join(__dirname, '..', '..', 'abi', `${contractName}.json`), // backend/abi
+    path.join(__dirname, '..', 'abi', `${contractName}.json`)        // backend/src/abi (legacy)
+  ];
+  for (const abiPath of candidates) {
+    try {
+      const abiData = fs.readFileSync(abiPath, 'utf8');
+      const parsed = JSON.parse(abiData);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      if (parsed && Array.isArray(parsed.abi)) {
+        return parsed.abi;
+      }
+      throw new Error('Invalid ABI format');
+    } catch (_e) {
+      // try next candidate
+    }
   }
+  console.error(`Error loading ABI for ${contractName}: tried paths ->`, candidates);
+  throw new Error(`Failed to load ABI for ${contractName}`);
 }
 
 function getABI(contractName: string) {
@@ -60,11 +73,11 @@ export class ContractService {
   private signer: ethers.Wallet;
 
   // Contract instances
-  public identityContract: ethers.Contract;
-  public credentialContract: ethers.Contract;
-  public accessControlContract: ethers.Contract;
-  public auditContract: ethers.Contract;
-  public mockVerifierContract: ethers.Contract;
+  public identityContract?: ethers.Contract;
+  public credentialContract?: ethers.Contract;
+  public accessControlContract?: ethers.Contract;
+  public auditContract?: ethers.Contract;
+  public mockVerifierContract?: ethers.Contract;
 
   constructor() {
     // Initialize provider and signer
@@ -98,22 +111,28 @@ export class ContractService {
     this.provider = new ethers.JsonRpcProvider(rpcUrl);
     this.signer = new ethers.Wallet(normalizedPrivateKey, this.provider);
 
-    // Initialize contracts
-    const identityAddress = process.env.IDENTITY_CONTRACT;
-    const credentialAddress = process.env.CREDENTIAL_CONTRACT;
-    const accessControlAddress = process.env.ACCESS_CONTROL_CONTRACT;
-    const auditAddress = process.env.AUDIT_CONTRACT;
-    const mockVerifierAddress = process.env.MOCK_VERIFIER_ADDRESS;
+    // Initialize contracts (addresses can come in two naming styles)
+    const identityAddress = process.env.IDENTITY_CONTRACT || process.env.IDENTITY_CONTRACT_ADDRESS;
+    const credentialAddress = process.env.CREDENTIAL_CONTRACT || process.env.CREDENTIAL_CONTRACT_ADDRESS;
+    const accessControlAddress = process.env.ACCESS_CONTROL_CONTRACT || process.env.ACCESS_CONTROL_CONTRACT_ADDRESS;
+    const auditAddress = process.env.AUDIT_CONTRACT || process.env.AUDIT_CONTRACT_ADDRESS;
+    const mockVerifierAddress = process.env.MOCK_VERIFIER_ADDRESS; // single canonical name in deploy output
 
-    if (!identityAddress || !credentialAddress || !accessControlAddress || !auditAddress || !mockVerifierAddress) {
-      throw new Error('All contract addresses are required in environment variables');
+    if (identityAddress) {
+      this.identityContract = new ethers.Contract(identityAddress, getABI('identity'), this.signer);
     }
-
-    this.identityContract = new ethers.Contract(identityAddress, getABI('identity'), this.signer);
-    this.credentialContract = new ethers.Contract(credentialAddress, getABI('credentialsCntract'), this.signer);
-    this.accessControlContract = new ethers.Contract(accessControlAddress, getABI('accessControl'), this.signer);
-    this.auditContract = new ethers.Contract(auditAddress, getABI('auditControl'), this.signer);
-    this.mockVerifierContract = new ethers.Contract(mockVerifierAddress, getABI('mockVerifier'), this.signer);
+    if (credentialAddress) {
+      this.credentialContract = new ethers.Contract(credentialAddress, getABI('credentialsCntract'), this.signer);
+    }
+    if (accessControlAddress) {
+      this.accessControlContract = new ethers.Contract(accessControlAddress, getABI('accessControl'), this.signer);
+    }
+    if (auditAddress) {
+      this.auditContract = new ethers.Contract(auditAddress, getABI('auditControl'), this.signer);
+    }
+    if (mockVerifierAddress) {
+      this.mockVerifierContract = new ethers.Contract(mockVerifierAddress, getABI('mockVerifier'), this.signer);
+    }
   }
 
   // Identity Contract Methods
@@ -153,6 +172,7 @@ export class ContractService {
   // Credential Contract Methods
   async issueCredential(to: string, credentialHash: string, uri: string): Promise<any> {
     try {
+      if (!this.credentialContract) throw new Error('CREDENTIAL_CONTRACT(_ADDRESS) is not set');
       // Validate and checksum the address
       const checksummedAddress = ethers.getAddress(to);
       const tx = await this.credentialContract.issue(checksummedAddress, credentialHash, uri);
@@ -165,6 +185,7 @@ export class ContractService {
 
   async revokeCredential(tokenId: number): Promise<any> {
     try {
+      if (!this.credentialContract) throw new Error('CREDENTIAL_CONTRACT(_ADDRESS) is not set');
       const tx = await this.credentialContract.revoke(tokenId);
       return await tx.wait();
     } catch (error) {
@@ -176,6 +197,7 @@ export class ContractService {
   // Access Control Contract Methods
   async requestAccess(subject: string, purposeHash: string): Promise<string> {
     try {
+      if (!this.accessControlContract) throw new Error('ACCESS_CONTROL_CONTRACT(_ADDRESS) is not set');
       // Validate and checksum the address
       const checksummedAddress = ethers.getAddress(subject);
       const tx = await this.accessControlContract.requestAccess(checksummedAddress, purposeHash);
@@ -191,6 +213,7 @@ export class ContractService {
 
   async approveAccess(requestId: string, signature: string, proof?: string): Promise<any> {
     try {
+      if (!this.accessControlContract) throw new Error('ACCESS_CONTROL_CONTRACT(_ADDRESS) is not set');
       const tx = await this.accessControlContract.approve(requestId, signature, proof || '0x');
       return await tx.wait();
     } catch (error) {
@@ -202,6 +225,7 @@ export class ContractService {
   // Mock Verifier Contract Methods
   async verifyProof(proof: string, signalHash: string): Promise<boolean> {
     try {
+      if (!this.mockVerifierContract) throw new Error('MOCK_VERIFIER_ADDRESS is not set');
       return await this.mockVerifierContract.verify(proof, signalHash);
     } catch (error) {
       console.error('Error verifying proof:', error);
