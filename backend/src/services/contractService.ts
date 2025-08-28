@@ -2,17 +2,20 @@ import { ethers } from 'ethers';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import * as dotenv from 'dotenv';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config();
 
+// Lazy-load ABI files
+let _IDENTITY_ABI: any = null;
+let _CREDENTIALS_ABI: any = null;
+let _ACCESS_CONTROL_ABI: any = null;
+let _AUDIT_CONTROL_ABI: any = null;
+let _MOCK_VERIFIER_ABI: any = null;
 
-// Load ABI files - path should be relative to backend root
-const loadABI = (contractName: string) => {
+function loadABI(contractName: string) {
   const abiPath = path.join(__dirname, '..', 'abi', `${contractName}.json`);
   try {
     const abiData = fs.readFileSync(abiPath, 'utf8');
@@ -21,16 +24,38 @@ const loadABI = (contractName: string) => {
     console.error(`Error loading ABI for ${contractName}:`, error);
     throw new Error(`Failed to load ABI for ${contractName}`);
   }
-};
+}
 
-// Contract ABIs
-const IDENTITY_ABI = loadABI('identity');
-const CREDENTIALS_ABI = loadABI('credentialsCntract');
-const ACCESS_CONTROL_ABI = loadABI('accessControl');
-const AUDIT_CONTROL_ABI = loadABI('auditControl');
-const MOCK_VERIFIER_ABI = loadABI('mockVerifier');
+function getABI(contractName: string) {
+  switch (contractName) {
+    case 'identity':
+      if (!_IDENTITY_ABI) _IDENTITY_ABI = loadABI('identity');
+      return _IDENTITY_ABI;
+    case 'credentialsCntract':
+      if (!_CREDENTIALS_ABI) _CREDENTIALS_ABI = loadABI('credentialsCntract');
+      return _CREDENTIALS_ABI;
+    case 'accessControl':
+      if (!_ACCESS_CONTROL_ABI) _ACCESS_CONTROL_ABI = loadABI('accessControl');
+      return _ACCESS_CONTROL_ABI;
+    case 'auditControl':
+      if (!_AUDIT_CONTROL_ABI) _AUDIT_CONTROL_ABI = loadABI('auditControl');
+      return _AUDIT_CONTROL_ABI;
+    case 'mockVerifier':
+      if (!_MOCK_VERIFIER_ABI) _MOCK_VERIFIER_ABI = loadABI('mockVerifier');
+      return _MOCK_VERIFIER_ABI;
+    default:
+      throw new Error(`Unknown contract: ${contractName}`);
+  }
+}
 
 export class ContractService {
+  async isWalletAddress(address: string): Promise<boolean> {
+    const code = await this.provider.getCode(address);
+    return code === "0x";
+  }
+  async getWalletAddress(): Promise<string> {
+    return this.signer.address;
+  }
   private provider: ethers.JsonRpcProvider;
   private signer: ethers.Wallet;
 
@@ -44,46 +69,51 @@ export class ContractService {
   constructor() {
     // Initialize provider and signer
     const rpcUrl = process.env.SEPOLIA_RPC_URL;
-    const privateKey = (process.env.WALLET_PRIVATE_KEY || '').trim();
+    const privateKey = process.env.SEPOLIA_PRIVATE_KEY;
+
+
 
     console.log('Environment check:');
     console.log('- SEPOLIA_RPC_URL:', rpcUrl || 'Not Set');
-    console.log('- WALLET_PRIVATE_KEY length:', privateKey ? privateKey.length : 0);
-    console.log('- WALLET_PRIVATE_KEY starts with 0x:', privateKey ? privateKey.startsWith('0x') : false);
+    console.log('- SEPOLIA_PRIVATE_KEY length:', privateKey ? privateKey.length : 0);
+    console.log('- SEPOLIA_PRIVATE_KEY starts with 0x:', privateKey ? privateKey.startsWith('0x') : false);
     console.log('- Available env vars:', Object.keys(process.env).filter(key => key.includes('RPC') || key.includes('KEY') || key.includes('ADDRESS')));
 
     if (!rpcUrl) {
-      throw new Error('SEPOLIA_RPC_URL or NETWORK_RPC_URL environment variable is required');
+      throw new Error('SEPOLIA_RPC_URL environment variable is required');
     }
 
     if (!privateKey) {
-      throw new Error('WALLET_PRIVATE_KEY environment variable is required. Please set it in your environment or create a .env file.');
+      throw new Error('SEPOLIA_PRIVATE_KEY environment variable is required. Please set it in your environment or create a .env file.');
     }
 
+    // Normalize private key format (add 0x if missing)
+    const normalizedPrivateKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
+
     // Validate private key format
-    if (!privateKey.startsWith('0x') || privateKey.length !== 66) {
-      throw new Error(`Invalid private key format. Expected 64 hex characters with 0x prefix, got length ${privateKey.length}. Current value: ${privateKey.substring(0, 10)}...`);
+    if (normalizedPrivateKey.length !== 66) {
+      throw new Error(`Invalid private key format. Expected 64 hex characters with 0x prefix, got length ${normalizedPrivateKey.length}. Current value: ${normalizedPrivateKey.substring(0, 10)}...`);
     }
 
     this.provider = new ethers.JsonRpcProvider(rpcUrl);
-    this.signer = new ethers.Wallet(privateKey, this.provider);
+    this.signer = new ethers.Wallet(normalizedPrivateKey, this.provider);
 
     // Initialize contracts
-    const identityAddress = process.env.IDENTITY_CONTRACT_ADDRESS;
-    const credentialAddress = process.env.CREDENTIAL_CONTRACT_ADDRESS;
-    const accessControlAddress = process.env.ACCESS_CONTROL_CONTRACT_ADDRESS;
-    const auditAddress = process.env.AUDIT_CONTRACT_ADDRESS;
+    const identityAddress = process.env.IDENTITY_CONTRACT;
+    const credentialAddress = process.env.CREDENTIAL_CONTRACT;
+    const accessControlAddress = process.env.ACCESS_CONTROL_CONTRACT;
+    const auditAddress = process.env.AUDIT_CONTRACT;
     const mockVerifierAddress = process.env.MOCK_VERIFIER_ADDRESS;
 
     if (!identityAddress || !credentialAddress || !accessControlAddress || !auditAddress || !mockVerifierAddress) {
       throw new Error('All contract addresses are required in environment variables');
     }
 
-    this.identityContract = new ethers.Contract(identityAddress, IDENTITY_ABI, this.signer);
-    this.credentialContract = new ethers.Contract(credentialAddress, CREDENTIALS_ABI, this.signer);
-    this.accessControlContract = new ethers.Contract(accessControlAddress, ACCESS_CONTROL_ABI, this.signer);
-    this.auditContract = new ethers.Contract(auditAddress, AUDIT_CONTROL_ABI, this.signer);
-    this.mockVerifierContract = new ethers.Contract(mockVerifierAddress, MOCK_VERIFIER_ABI, this.signer);
+    this.identityContract = new ethers.Contract(identityAddress, getABI('identity'), this.signer);
+    this.credentialContract = new ethers.Contract(credentialAddress, getABI('credentialsCntract'), this.signer);
+    this.accessControlContract = new ethers.Contract(accessControlAddress, getABI('accessControl'), this.signer);
+    this.auditContract = new ethers.Contract(auditAddress, getABI('auditControl'), this.signer);
+    this.mockVerifierContract = new ethers.Contract(mockVerifierAddress, getABI('mockVerifier'), this.signer);
   }
 
   // Identity Contract Methods
@@ -99,7 +129,9 @@ export class ContractService {
 
   async addIssuer(account: string): Promise<any> {
     try {
-      const tx = await this.identityContract.addIssuer(account);
+      // Validate and checksum the address
+      const checksummedAddress = ethers.getAddress(account);
+      const tx = await this.identityContract.addIssuer(checksummedAddress);
       return await tx.wait();
     } catch (error) {
       console.error('Error adding issuer:', error);
@@ -109,7 +141,9 @@ export class ContractService {
 
   async isRegistered(user: string): Promise<boolean> {
     try {
-      return await this.identityContract.isRegistered(user);
+      // Validate and checksum the address
+      const checksummedAddress = ethers.getAddress(user);
+      return await this.identityContract.isRegistered(checksummedAddress);
     } catch (error) {
       console.error('Error checking registration:', error);
       throw error;
@@ -119,7 +153,9 @@ export class ContractService {
   // Credential Contract Methods
   async issueCredential(to: string, credentialHash: string, uri: string): Promise<any> {
     try {
-      const tx = await this.credentialContract.issue(to, credentialHash, uri);
+      // Validate and checksum the address
+      const checksummedAddress = ethers.getAddress(to);
+      const tx = await this.credentialContract.issue(checksummedAddress, credentialHash, uri);
       return await tx.wait();
     } catch (error) {
       console.error('Error issuing credential:', error);
@@ -140,7 +176,9 @@ export class ContractService {
   // Access Control Contract Methods
   async requestAccess(subject: string, purposeHash: string): Promise<string> {
     try {
-      const tx = await this.accessControlContract.requestAccess(subject, purposeHash);
+      // Validate and checksum the address
+      const checksummedAddress = ethers.getAddress(subject);
+      const tx = await this.accessControlContract.requestAccess(checksummedAddress, purposeHash);
       const receipt = await tx.wait();
       // Extract requestId from events
       const event = receipt.logs.find((log: any) => log.eventName === 'AccessRequested');

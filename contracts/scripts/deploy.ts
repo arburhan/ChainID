@@ -6,30 +6,30 @@ async function main() {
 
   const Identity = await ethers.getContractFactory("IdentityContract");
   const identity = await Identity.deploy(deployer.address);
-  await identity.deployed();
-  console.log("IdentityContract:", identity.address);
+  await identity.waitForDeployment();
+  console.log("IdentityContract:", await identity.getAddress());
 
   const Credential = await ethers.getContractFactory("CredentialContract");
-  const credential = await Credential.deploy(identity.address);
-  await credential.deployed();
-  console.log("CredentialContract:", credential.address);
+  const credential = await Credential.deploy(await identity.getAddress());
+  await credential.waitForDeployment();
+  console.log("CredentialContract:", await credential.getAddress());
 
   const AccessCtrl = await ethers.getContractFactory("AccessControlContract");
   const accessCtrl = await AccessCtrl.deploy(deployer.address);
-  await accessCtrl.deployed();
-  console.log("AccessControlContract:", accessCtrl.address);
+  await accessCtrl.waitForDeployment();
+  console.log("AccessControlContract:", await accessCtrl.getAddress());
 
   const Audit = await ethers.getContractFactory("AuditContract");
   const audit = await Audit.deploy();
-  await audit.deployed();
-  console.log("AuditContract:", audit.address);
+  await audit.waitForDeployment();
+  console.log("AuditContract:", await audit.getAddress());
 
   const Mock = await ethers.getContractFactory("MockVerifier");
   const mock = await Mock.deploy();
-  await mock.deployed();
-  console.log("MockVerifier:", mock.address);
+  await mock.waitForDeployment();
+  console.log("MockVerifier:", await mock.getAddress());
 
-  const tx = await accessCtrl.setVerifier(mock.address);
+  const tx = await accessCtrl.setVerifier(await mock.getAddress());
   await tx.wait();
   console.log("Verifier set on AccessControlContract");
 }

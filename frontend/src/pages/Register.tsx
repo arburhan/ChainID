@@ -36,17 +36,22 @@ export function Register() {
   }
 
   async function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!address) return
-    setIsLoading(true)
+    e.preventDefault();
+    if (!address) return;
+    setIsLoading(true);
     try {
-      const profile = { name, nid }
-      const data = await register(address, profile)
-      setResult(data)
+      const profile = { name, nid };
+      // address is already checksummed from connectWallet
+      const data = await register(address, profile);
+      setResult(data);
     } catch (error) {
-      console.error('Registration failed:', error)
+      const errorMessage = typeof error === 'object' && error !== null && 'message' in error
+        ? (error as { message?: string }).message
+        : undefined;
+      setResult({ error: errorMessage || 'Registration failed' });
+      console.error('Registration failed:', error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -86,12 +91,11 @@ export function Register() {
           {/* Wallet Connection */}
           <div className="mb-8 p-6 bg-purple-50 rounded-xl border border-purple-100">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Step 1: Connect Your Wallet</h2>
-            <button 
-              className={`w-full px-6 py-3 rounded-lg font-semibold transition-all ${
-                address 
-                  ? 'bg-green-100 text-green-800 border border-green-200' 
-                  : 'bg-purple-600 text-white hover:bg-purple-700'
-              }`} 
+            <button
+              className={`w-full px-6 py-3 rounded-lg font-semibold transition-all ${address
+                ? 'bg-green-100 text-green-800 border border-green-200'
+                : 'bg-purple-600 text-white hover:bg-purple-700'
+                }`}
               onClick={onConnect}
               disabled={isLoading}
             >
@@ -108,35 +112,35 @@ export function Register() {
           {address && (
             <form className="space-y-6" onSubmit={onSubmit}>
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Step 2: Enter Your Information</h2>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Full Name
                 </label>
-                <input 
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" 
-                  placeholder="Enter your full name" 
-                  value={name} 
+                <input
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  placeholder="Enter your full name"
+                  value={name}
                   onChange={e => setName(e.target.value)}
                   required
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   National ID
                 </label>
-                <input 
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" 
-                  placeholder="Enter your national ID number" 
-                  value={nid} 
+                <input
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  placeholder="Enter your national ID number"
+                  value={nid}
                   onChange={e => setNid(e.target.value)}
                   required
                 />
               </div>
-              
-              <button 
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+
+              <button
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 type="submit"
                 disabled={isLoading || !name || !nid}
               >

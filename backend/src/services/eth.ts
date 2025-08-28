@@ -8,20 +8,76 @@ function loadArtifact(name: string) {
   return json.abi as any[];
 }
 
-const rpcUrl = process.env.SEPOLIA_RPC_URL || "";
-if (!rpcUrl) throw new Error("Missing SEPOLIA_RPC_URL");
+// Lazy-load provider and signer
+let _provider: ethers.JsonRpcProvider | null = null;
+let _signer: ethers.Wallet | null = null;
 
-export const provider = new ethers.JsonRpcProvider(rpcUrl);
-const pk = process.env.SEPOLIA_PRIVATE_KEY || "";
-if (!pk) throw new Error("Missing SEPOLIA_PRIVATE_KEY");
-export const signer = new ethers.Wallet(pk, provider);
+function getProvider(): ethers.JsonRpcProvider {
+  if (!_provider) {
+    const rpcUrl = process.env.SEPOLIA_RPC_URL || "";
+    if (!rpcUrl) throw new Error("Missing SEPOLIA_RPC_URL");
+    _provider = new ethers.JsonRpcProvider(rpcUrl);
+  }
+  return _provider;
+}
 
-const identityAddress = process.env.IDENTITY_CONTRACT || "";
-const credentialAddress = process.env.CREDENTIAL_CONTRACT || "";
-const accessAddress = process.env.ACCESS_CONTROL_CONTRACT || "";
-const auditAddress = process.env.AUDIT_CONTRACT || "";
+function getSigner(): ethers.Wallet {
+  if (!_signer) {
+    const pk = normalizePrivateKey(process.env.SEPOLIA_PRIVATE_KEY || "");
+    _signer = new ethers.Wallet(pk, getProvider());
+  }
+  return _signer;
+}
 
-export const identity = new ethers.Contract(identityAddress, loadArtifact("IdentityContract"), signer);
-export const credential = new ethers.Contract(credentialAddress, loadArtifact("CredentialContract"), signer);
-export const accessCtrl = new ethers.Contract(accessAddress, loadArtifact("AccessControlContract"), signer);
-export const audit = new ethers.Contract(auditAddress, loadArtifact("AuditContract"), signer);
+function normalizePrivateKey(maybeKey: string): string {
+  const trimmed = (maybeKey || "").trim();
+  if (!trimmed) throw new Error("Missing SEPOLIA_PRIVATE_KEY");
+  return trimmed.startsWith("0x") ? trimmed : ("0x" + trimmed);
+}
+
+function getAddress(varNamePrimary: string, varNameAlt?: string): string {
+  const val = (process.env[varNamePrimary] || (varNameAlt ? process.env[varNameAlt] : "") || "").trim();
+  if (!val) {
+    throw new Error(`Missing contract address env: ${varNamePrimary}${varNameAlt ? ` (or ${varNameAlt})` : ""}`);
+  }
+  // Normalize and checksum the address. Accept lowercase, fix bad checksum casing.
+  try {
+    return ethers.getAddress(val);
+  } catch {
+    // If checksum casing is wrong, try lowercasing then checksum
+    try {
+      return ethers.getAddress(val.toLowerCase());
+    } catch (e) {
+      throw new Error(`Invalid contract address for ${varNamePrimary}: ${val}`);
+    }
+  }
+}
+
+// Lazy-load contracts
+export function getIdentityContract() {
+  const identityAddress = getAddress("IDENTITY_CONTRACT", "IDENTITY_CONTRACT_ADDRESS");
+  return new ethers.Contract(identityAddress, loadArtifact("IdentityContract"), getSigner());
+}
+
+export function getCredentialContract() {
+  const credentialAddress = getAddress("CREDENTIAL_CONTRACT", "CREDENTIAL_CONTRACT_ADDRESS");
+  return new ethers.Contract(credentialAddress, loadArtifact("CredentialContract"), getSigner());
+}
+
+export function getAccessControlContract() {
+  const accessAddress = getAddress("ACCESS_CONTROL_CONTRACT", "ACCESS_CONTROL_CONTRACT_ADDRESS");
+  return new ethers.Contract(accessAddress, loadArtifact("AccessControlContract"), getSigner());
+}
+
+export function getAuditContract() {
+  const auditAddress = getAddress("AUDIT_CONTRACT", "AUDIT_CONTRACT_ADDRESS");
+  return new ethers.Contract(auditAddress, loadArtifact("AuditContract"), getSigner());
+}
+
+// Legacy exports for backward compatibility - these are getter functions now
+export const provider = getProvider;
+export const signer = getSigner;
+export const identity = getIdentityContract;
+export const credential = getCredentialContract;
+export const accessCtrl = getAccessControlContract;
+export const audit = getAuditContract;

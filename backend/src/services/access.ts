@@ -8,13 +8,24 @@ export async function requestAccessHandler(req: Request, res: Response) {
   try {
     const { requester, subject, purpose } = req.body as { requester: string; subject: string; purpose: Record<string, unknown> };
     if (!requester || !subject || !purpose) return res.status(400).json({ error: "Missing fields" });
+    
+    // Validate and checksum the addresses
+    let checksummedRequester: string;
+    let checksummedSubject: string;
+    try {
+      checksummedRequester = ethers.getAddress(requester);
+      checksummedSubject = ethers.getAddress(subject);
+    } catch (error) {
+      return res.status(400).json({ error: "Invalid Ethereum address format" });
+    }
+    
     const purposeHash = "0x" + crypto.createHash("sha256").update(JSON.stringify(purpose)).digest("hex");
-    const tx = await accessCtrl.requestAccess(ethers.getAddress(subject), purposeHash);
+    const tx = await accessCtrl.requestAccess(checksummedSubject, purposeHash);
     const rc = await tx.wait();
     await ConsentModel.create({
       requestId: "",
-      requester: ethers.getAddress(requester),
-      subject: ethers.getAddress(subject),
+      requester: checksummedRequester,
+      subject: checksummedSubject,
       purposeHash,
       approved: false
     });

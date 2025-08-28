@@ -2,11 +2,20 @@ import { Router } from 'express';
 import ContractService from '../services/contractService';
 
 const router = Router();
-const contractService = new ContractService();
+let contractService: ContractService;
+
+// Initialize contract service lazily
+function getContractService() {
+  if (!contractService) {
+    contractService = new ContractService();
+  }
+  return contractService;
+}
 
 // Get contract addresses
 router.get('/addresses', async (req, res) => {
   try {
+    const contractService = getContractService();
     const addresses = await contractService.getContractAddresses();
     res.json({ success: true, addresses });
   } catch (error) {
@@ -18,6 +27,7 @@ router.get('/addresses', async (req, res) => {
 // Get signer info
 router.get('/signer', async (req, res) => {
   try {
+    const contractService = getContractService();
     const address = await contractService.getSignerAddress();
     const balance = await contractService.getBalance();
     res.json({ success: true, address, balance });
@@ -35,6 +45,7 @@ router.post('/identity/register', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Profile hash is required' });
     }
 
+    const contractService = getContractService();
     const result = await contractService.registerDID(profileHash);
     res.json({ success: true, transaction: result });
   } catch (error) {
@@ -50,22 +61,32 @@ router.post('/identity/add-issuer', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Account address is required' });
     }
 
+    const contractService = getContractService();
     const result = await contractService.addIssuer(account);
     res.json({ success: true, transaction: result });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error adding issuer:', error);
-    res.status(500).json({ success: false, error: 'Failed to add issuer' });
+    if (error.message.includes('bad address checksum') || error.message.includes('Invalid Ethereum address')) {
+      res.status(400).json({ success: false, error: 'Invalid Ethereum address format' });
+    } else {
+      res.status(500).json({ success: false, error: 'Failed to add issuer' });
+    }
   }
 });
 
 router.get('/identity/registered/:user', async (req, res) => {
   try {
     const { user } = req.params;
+    const contractService = getContractService();
     const isRegistered = await contractService.isRegistered(user);
     res.json({ success: true, isRegistered });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error checking registration:', error);
-    res.status(500).json({ success: false, error: 'Failed to check registration' });
+    if (error.message.includes('bad address checksum') || error.message.includes('Invalid Ethereum address')) {
+      res.status(400).json({ success: false, error: 'Invalid Ethereum address format' });
+    } else {
+      res.status(500).json({ success: false, error: 'Failed to check registration' });
+    }
   }
 });
 
@@ -80,11 +101,16 @@ router.post('/credential/issue', async (req, res) => {
       });
     }
 
+    const contractService = getContractService();
     const result = await contractService.issueCredential(to, credentialHash, uri);
     res.json({ success: true, transaction: result });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error issuing credential:', error);
-    res.status(500).json({ success: false, error: 'Failed to issue credential' });
+    if (error.message.includes('bad address checksum') || error.message.includes('Invalid Ethereum address')) {
+      res.status(400).json({ success: false, error: 'Invalid Ethereum address format' });
+    } else {
+      res.status(500).json({ success: false, error: 'Failed to issue credential' });
+    }
   }
 });
 
@@ -95,6 +121,7 @@ router.post('/credential/revoke', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Token ID is required' });
     }
 
+    const contractService = getContractService();
     const result = await contractService.revokeCredential(tokenId);
     res.json({ success: true, transaction: result });
   } catch (error) {
@@ -114,11 +141,16 @@ router.post('/access/request', async (req, res) => {
       });
     }
 
+    const contractService = getContractService();
     const requestId = await contractService.requestAccess(subject, purposeHash);
     res.json({ success: true, requestId });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error requesting access:', error);
-    res.status(500).json({ success: false, error: 'Failed to request access' });
+    if (error.message.includes('bad address checksum') || error.message.includes('Invalid Ethereum address')) {
+      res.status(400).json({ success: false, error: 'Invalid Ethereum address format' });
+    } else {
+      res.status(500).json({ success: false, error: 'Failed to request access' });
+    }
   }
 });
 
@@ -132,6 +164,7 @@ router.post('/access/approve', async (req, res) => {
       });
     }
 
+    const contractService = getContractService();
     const result = await contractService.approveAccess(requestId, signature, proof);
     res.json({ success: true, transaction: result });
   } catch (error) {
@@ -151,6 +184,7 @@ router.post('/verifier/verify', async (req, res) => {
       });
     }
 
+    const contractService = getContractService();
     const isValid = await contractService.verifyProof(proof, signalHash);
     res.json({ success: true, isValid });
   } catch (error) {

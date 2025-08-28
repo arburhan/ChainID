@@ -1,20 +1,24 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import mongoose from "mongoose";
 import contractRoutes from './routes/contracts';
 import { apiRouter } from './routes/api';
 
-// Load environment variables from .env.local if exists, otherwise fallback to .env
-import fs from 'fs';
-const envLocalPath = require('path').resolve(__dirname, '../.env.local');
-if (fs.existsSync(envLocalPath)) {
-  dotenv.config({ path: envLocalPath });
-} else {
-  dotenv.config();
-}
+
+// Load environment variables from .env file
+dotenv.config({ path: '.env' });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+mongoose.connect(process.env.MONGO_URI || "")
+  .then(() => {
+    console.log("MongoDB connected");
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });
 
 // Middleware
 app.use(cors());
