@@ -118,20 +118,32 @@ export class ContractService {
     const auditAddress = process.env.AUDIT_CONTRACT || process.env.AUDIT_CONTRACT_ADDRESS;
     const mockVerifierAddress = process.env.MOCK_VERIFIER_ADDRESS; // single canonical name in deploy output
 
-    if (identityAddress) {
-      this.identityContract = new ethers.Contract(identityAddress, getABI('identity'), this.signer);
+    const safeAddress = (addr?: string) => {
+      if (!addr) return undefined;
+      if (!/^0x[0-9a-fA-F]{40}$/.test(addr)) throw new Error(`Invalid address format: ${addr}`);
+      return ethers.getAddress(addr.toLowerCase());
+    };
+
+    const identityAddr = safeAddress(identityAddress);
+    const credentialAddr = safeAddress(credentialAddress);
+    const accessCtrlAddr = safeAddress(accessControlAddress);
+    const auditAddr = safeAddress(auditAddress);
+    const mockVerifierAddr = safeAddress(mockVerifierAddress);
+
+    if (identityAddr) {
+      this.identityContract = new ethers.Contract(identityAddr, getABI('identity'), this.signer);
     }
-    if (credentialAddress) {
-      this.credentialContract = new ethers.Contract(credentialAddress, getABI('credentialsCntract'), this.signer);
+    if (credentialAddr) {
+      this.credentialContract = new ethers.Contract(credentialAddr, getABI('credentialsCntract'), this.signer);
     }
-    if (accessControlAddress) {
-      this.accessControlContract = new ethers.Contract(accessControlAddress, getABI('accessControl'), this.signer);
+    if (accessCtrlAddr) {
+      this.accessControlContract = new ethers.Contract(accessCtrlAddr, getABI('accessControl'), this.signer);
     }
-    if (auditAddress) {
-      this.auditContract = new ethers.Contract(auditAddress, getABI('auditControl'), this.signer);
+    if (auditAddr) {
+      this.auditContract = new ethers.Contract(auditAddr, getABI('auditControl'), this.signer);
     }
-    if (mockVerifierAddress) {
-      this.mockVerifierContract = new ethers.Contract(mockVerifierAddress, getABI('mockVerifier'), this.signer);
+    if (mockVerifierAddr) {
+      this.mockVerifierContract = new ethers.Contract(mockVerifierAddr, getABI('mockVerifier'), this.signer);
     }
   }
 
@@ -148,12 +160,45 @@ export class ContractService {
 
   async addIssuer(account: string): Promise<any> {
     try {
-      // Validate and checksum the address
-      const checksummedAddress = ethers.getAddress(account);
+      // Validate and checksum the address; tolerate bad checksum by normalizing case
+      let checksummedAddress: string;
+      try {
+        checksummedAddress = ethers.getAddress(account);
+      } catch (err: any) {
+        if (typeof account === 'string' && /^0x[0-9a-fA-F]{40}$/.test(account)) {
+          checksummedAddress = ethers.getAddress(account.toLowerCase());
+        } else {
+          throw err;
+        }
+      }
+      if (!this.identityContract) throw new Error('IDENTITY_CONTRACT(_ADDRESS) is not set');
       const tx = await this.identityContract.addIssuer(checksummedAddress);
       return await tx.wait();
     } catch (error) {
       console.error('Error adding issuer:', error);
+      throw error;
+    }
+  }
+
+  async addIssuerOnCredentialIdentity(account: string): Promise<any> {
+    try {
+      if (!this.credentialContract) throw new Error('CREDENTIAL_CONTRACT(_ADDRESS) is not set');
+      // Discover the exact Identity address used by the credential contract
+      const identityAddr: string = await this.credentialContract.identity();
+      const identityAbi = getABI('identity');
+      const identity = new ethers.Contract(ethers.getAddress(identityAddr), identityAbi, this.signer);
+
+      let checksummedAddress: string;
+      try {
+        checksummedAddress = ethers.getAddress(account);
+      } catch {
+        checksummedAddress = ethers.getAddress(account.toLowerCase());
+      }
+
+      const tx = await identity.addIssuer(checksummedAddress);
+      return await tx.wait();
+    } catch (error) {
+      console.error('Error adding issuer on credential.identity:', error);
       throw error;
     }
   }
@@ -175,6 +220,11 @@ export class ContractService {
       if (!this.credentialContract) throw new Error('CREDENTIAL_CONTRACT(_ADDRESS) is not set');
       // Validate and checksum the address
       const checksummedAddress = ethers.getAddress(to);
+      // Prevent safeMint to non-ERC721Receiver contracts (common cause of custom error)
+      const codeAtRecipient = await this.provider.getCode(checksummedAddress);
+      if (codeAtRecipient && codeAtRecipient !== '0x') {
+        throw new Error('Recipient is a contract. Please use a wallet (EOA) address.');
+      }
       const tx = await this.credentialContract.issue(checksummedAddress, credentialHash, uri);
       return await tx.wait();
     } catch (error) {

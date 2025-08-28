@@ -13,7 +13,19 @@ export async function register(address: string, profile: any) {
 }
 
 export async function issueCredential(to: string, metadataURI: string, payload: any) {
-  const { data } = await api.post('/api/contracts/credential/issue', { to, credentialHash: metadataURI, uri: metadataURI })
+  // Compute bytes32 hash for credentialHash from the URI
+  const credentialHash = ethers.keccak256(ethers.toUtf8Bytes(metadataURI))
+  const { data } = await api.post('/api/contracts/credential/issue', { to, credentialHash, uri: metadataURI })
+  return data
+}
+
+export async function getSignerInfo() {
+  const { data } = await api.get('/api/contracts/signer')
+  return data
+}
+
+export async function addIssuer(account: string) {
+  const { data } = await api.post('/api/contracts/identity/add-issuer', { account })
   return data
 }
 

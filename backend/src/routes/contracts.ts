@@ -56,13 +56,11 @@ router.post('/identity/register', async (req, res) => {
 
 router.post('/identity/add-issuer', async (req, res) => {
   try {
-    const { account } = req.body;
-    if (!account) {
-      return res.status(400).json({ success: false, error: 'Account address is required' });
-    }
-
     const contractService = getContractService();
-    const result = await contractService.addIssuer(account);
+    // Always grant issuer to the backend signer address to avoid client checksum/casing issues
+    const signerAddr = await contractService.getSignerAddress();
+    // Grant on the Identity used by the Credential contract to match the issuer check
+    const result = await contractService.addIssuerOnCredentialIdentity(signerAddr);
     res.json({ success: true, transaction: result });
   } catch (error: any) {
     console.error('Error adding issuer:', error);

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { connectWallet } from '../lib/wallet'
-import { issueCredential } from '../lib/api'
+import { issueCredential, getSignerInfo, addIssuer } from '../lib/api'
 import { Link } from 'react-router-dom'
 
 // Icon components
@@ -35,16 +35,44 @@ export function Dashboard() {
   const [payload, setPayload] = useState('{"type":"KYC","level":"basic"}')
   const [result, setResult] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [backendSigner, setBackendSigner] = useState<{address?: string, balance?: string} | null>(null)
+  const [isGranting, setIsGranting] = useState(false)
+  const [issuerGranted, setIssuerGranted] = useState(false)
+  const [issueSuccess, setIssueSuccess] = useState<{ hash?: string } | null>(null)
 
   async function onConnect() {
     setIsLoading(true)
     try {
       const r = await connectWallet()
       if (r) setAddress(r.address)
+      // fetch backend signer info
+      try {
+        const s = await getSignerInfo()
+        setBackendSigner(s)
+      } catch (e) {
+        console.error('Failed to fetch backend signer:', e)
+      }
     } catch (error) {
       console.error('Failed to connect wallet:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  async function onGrantIssuer() {
+    if (!backendSigner?.address) return
+    setIsGranting(true)
+    try {
+      const res = await addIssuer(backendSigner.address)
+      setResult(res)
+      if (res?.success && res?.transaction?.status === 1) {
+        setIssuerGranted(true)
+      }
+    } catch (e) {
+      console.error('Failed to grant issuer:', e)
+      setResult({ error: 'Failed to grant issuer. Check backend signer address and permissions.' })
+    } finally {
+      setIsGranting(false)
     }
   }
 
@@ -56,9 +84,15 @@ export function Dashboard() {
     try {
       const data = await issueCredential(to, uri, JSON.parse(payload))
       setResult(data)
+      if (data?.success && data?.transaction?.hash) {
+        setIssueSuccess({ hash: data.transaction.hash })
+      } else {
+        setIssueSuccess(null)
+      }
     } catch (error) {
       console.error('Failed to issue credential:', error)
       setResult({ error: 'Failed to issue credential. Please check your inputs and try again.' })
+      setIssueSuccess(null)
     } finally {
       setIsLoading(false)
     }
@@ -119,6 +153,20 @@ export function Dashboard() {
               <p className="text-sm text-gray-600">
                 Connected Wallet: <span className="font-mono text-purple-600">{address.slice(0, 6)}...{address.slice(-4)}</span>
               </p>
+              {backendSigner?.address && (
+                <div className="mt-2 text-sm text-gray-600">
+                  Backend Signer: <span className="font-mono text-blue-600">{backendSigner.address}</span>
+                  {backendSigner.balance && <span className="ml-2">(Balance: {backendSigner.balance} ETH)</span>}
+                  <button
+                    type="button"
+                    onClick={onGrantIssuer}
+                    disabled={isGranting || issuerGranted}
+                    className={`ml-3 inline-flex items-center px-3 py-1.5 rounded text-white text-xs disabled:opacity-50 ${issuerGranted ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+                  >
+                    {issuerGranted ? 'Issuer Granted' : isGranting ? 'Granting...' : 'Grant Issuer Role'}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -192,7 +240,10 @@ export function Dashboard() {
                   </div>
                 ) : (
                   <div className="bg-green-50 border-green-200">
-                    <h3 className="text-sm font-semibold text-green-800 mb-2">Credential Issued Successfully</h3>
+                    <h3 className="text-sm font-semibold text-green-800 mb-2">{issueSuccess ? 'Credential Issued Successfully' : 'Operation Successful'}</h3>
+                    {issueSuccess?.hash && (
+                      <p className="text-green-800 text-sm mb-2">Tx Hash: <span className="font-mono">{issueSuccess.hash}</span></p>
+                    )}
                     <div className="bg-white p-3 rounded border border-green-200">
                       <pre className="text-xs text-green-800 overflow-x-auto">
                         {JSON.stringify(result, null, 2)}
