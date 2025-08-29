@@ -10,15 +10,19 @@
     "extract:whitepaper": "node scripts/extract-whitepaper.mjs"
   },
   "dependencies": {
+    "@babel/runtime": "^7.28.3",
     "axios": "^1.6.8",
     "ethers": "^6.15.0",
     "framer-motion": "^11.0.0",
+    "html5-qrcode": "^2.3.8",
     "motion": "^12.23.12",
+    "qrcode": "^1.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.0"
   },
   "devDependencies": {
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^18.2.61",
     "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react": "^4.2.1",

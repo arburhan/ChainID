@@ -53,6 +53,8 @@ export function Dashboard() {
   const [isRequesting, setIsRequesting] = useState(false)
   const [isApproving, setIsApproving] = useState(false)
   const [isSigning, setIsSigning] = useState(false)
+  const [isFetchingReq, setIsFetchingReq] = useState(false)
+  const [requestDetails, setRequestDetails] = useState<any>(null)
 
   async function onConnect() {
     setIsLoading(true)
@@ -204,6 +206,53 @@ export function Dashboard() {
       console.error('Failed to sign:', e)
     } finally {
       setIsSigning(false)
+    }
+  }
+
+  async function onFetchAccessDetails() {
+    try {
+      setIsFetchingReq(true)
+      setRequestDetails(null)
+      if (!/^0x[0-9a-fA-F]{64}$/.test(reqId.trim())) {
+        setRequestDetails({ error: 'Invalid Request ID. Use the bytes32 value from Request Access.' })
+        return
+      }
+      // resolve access control address
+      let accessAddress = CONTRACT_ADDRESSES.ACCESS_CONTROL
+      if (!accessAddress || !ethers.isAddress(accessAddress)) {
+        try {
+          const baseURL = (import.meta as any).env.VITE_BACKEND_URL || 'http://localhost:4000'
+          const { data } = await axios.get(`${baseURL}/api/contracts/addresses`)
+          accessAddress = data?.addresses?.accessControl || ''
+        } catch {}
+      }
+      if (!accessAddress || !ethers.isAddress(accessAddress)) {
+        setRequestDetails({ error: 'ACCESS_CONTROL address not set. Configure env or backend addresses endpoint.' })
+        return
+      }
+      const eth: any = (window as any).ethereum
+      if (!eth) {
+        setRequestDetails({ error: 'No wallet provider found.' })
+        return
+      }
+      const provider = new ethers.BrowserProvider(eth)
+      const signer = await provider.getSigner()
+      const access = createContractInstance(accessAddress, CONTRACT_ABIS.ACCESS_CONTROL, signer)
+      const req = await (access as any).requestOf(reqId)
+      const approved = await (access as any).isApproved(reqId)
+      const details = {
+        requester: req?.requester ?? req?.[0],
+        subject: req?.subject ?? req?.[1],
+        purposeHash: req?.purposeHash ?? req?.[2],
+        timestamp: (req?.timestamp ?? req?.[3])?.toString?.() ?? '',
+        approved
+      }
+      setRequestDetails(details)
+    } catch (e) {
+      console.error('Failed to fetch access details:', e)
+      setRequestDetails({ error: 'Failed to fetch details.' })
+    } finally {
+      setIsFetchingReq(false)
     }
   }
 
@@ -433,6 +482,9 @@ export function Dashboard() {
                 <label className="block text-sm font-medium text-slate-200 mb-2">Request ID</label>
                 <input className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value={reqId} onChange={e => setReqId(e.target.value)} placeholder="0x..." required />
               </div>
+              <div className="flex items-center justify-end">
+                <button type="button" onClick={onFetchAccessDetails} disabled={isFetchingReq || !reqId} className="px-3 py-2 rounded bg-indigo-700 text-white text-xs hover:bg-indigo-800 disabled:opacity-50">{isFetchingReq ? 'Fetching...' : 'View Details'}</button>
+              </div>
               <div className="flex items-center gap-2">
                 <label className="block text-sm font-medium text-slate-200 mb-2">Signature</label>
                 <button type="button" onClick={onSignWithWallet} disabled={!reqId || !address || isSigning} className="ml-auto px-3 py-2 rounded bg-indigo-600 text-white text-xs hover:bg-indigo-700 disabled:opacity-50">{isSigning ? 'Signing...' : 'Sign with Wallet'}</button>
@@ -447,6 +499,11 @@ export function Dashboard() {
             {approveOut && (
               <div className="mt-4 p-3 rounded border bg-slate-800">
                 <pre className="text-xs text-green-300 overflow-x-auto">{JSON.stringify(approveOut, null, 2)}</pre>
+              </div>
+            )}
+            {requestDetails && (
+              <div className="mt-4 p-3 rounded border bg-slate-800">
+                <pre className="text-xs text-indigo-300 overflow-x-auto">{JSON.stringify(requestDetails, null, 2)}</pre>
               </div>
             )}
           </div>

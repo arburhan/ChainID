@@ -41,7 +41,7 @@ export function Verify() {
       }
       // Then, optionally verify on-chain credential (kept for future extension)
       const data = await verifyCredential(tokenId)
-      setResult({ verified: true, db: dbCheck, chain: data })
+      setResult({ verified: true, message: 'Verification successfully completed.', db: dbCheck, chain: data })
     } catch (error) {
       console.error('Verification failed:', error)
       setResult({ error: 'Verification failed. Please check the token ID and try again.' })
@@ -123,6 +123,11 @@ export function Verify() {
                 </>
               )}
             </button>
+            {
+              result && result.message && (
+                <p className="text-green-300 text-xl">{result.message}</p>
+              )
+            }
           </form>
 
           {result && (

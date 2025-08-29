@@ -54,23 +54,24 @@ export const Landing: React.FC = () => {
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-700/40">
                 <span className="text-white font-bold text-lg">Ξ</span>
               </div>
-              <span className="text-2xl font-bold">ChainID</span>
+              <Link to="/" className="text-white text-2xl font-bold">ChainID </Link>
+
             </div>
 
             {/* Navigation */}
             <nav className="flex items-center space-x-8">
-              <Link to="/verify" className="text-slate-300 hover:text-white transition-colors">
-                Verify Identity
+              <Link to="/government" className="text-slate-300 hover:text-white transition-colors">
+                Government
               </Link>
-              <Link to="/dashboard" className="text-slate-300 hover:text-white transition-colors">
-                Dashboard
+              <Link to="/telecommunication" className="text-slate-300 hover:text-white transition-colors">
+                Telecommunication
               </Link>
-              <Link
+              {/* <Link
                 to="/register"
                 className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-700/40"
               >
                 Get Started
-              </Link>
+              </Link> */}
             </nav>
           </div>
         </div>
@@ -90,13 +91,13 @@ export const Landing: React.FC = () => {
             Control your data, verify credentials, and manage access with privacy — powered by Ethereum.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }} className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register" className="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition-all flex items-center justify-center space-x-2 shadow-lg shadow-indigo-700/40">
+            <Link to="/government" className="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition-all flex items-center justify-center space-x-2 shadow-lg shadow-indigo-700/40">
               <ShieldIcon className="w-6 h-6" />
               <PersonIcon className="w-6 h-6" />
-              <span>Create Your Identity</span>
+              <span>Government Portal</span>
             </Link>
-            <Link to="/verify" className="border-2 border-indigo-400/50 text-indigo-200 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-500/10 transition-colors">
-              Verify Identity
+            <Link to="/telecommunication" className="border-2 border-indigo-400/50 text-indigo-200 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-500/10 transition-colors">
+              Telecom Portal
             </Link>
           </motion.div>
         </div>
@@ -225,9 +226,9 @@ export const Landing: React.FC = () => {
           <p className="text-xl text-slate-300/80 mb-8">
             Join the decentralized identity revolution and experience true digital sovereignty.
           </p>
-          <Link to="/register" className="bg-gradient-to-r from-indigo-600 to-sky-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-indigo-700 hover:to-sky-700 transition-all flex items-center justify-center space-x-2 mx-auto shadow-lg shadow-indigo-700/40">
+          <Link to="/government" className="bg-gradient-to-r from-indigo-600 to-sky-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-indigo-700 hover:to-sky-700 transition-all flex items-center justify-center space-x-2 mx-auto shadow-lg shadow-indigo-700/40">
             <LightningIcon className="w-6 h-6" />
-            <span>Start Building Your Identity</span>
+            <span>Access Government Portal</span>
           </Link>
         </div>
       </section>
