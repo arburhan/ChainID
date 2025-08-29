@@ -1,6 +1,15 @@
 import React from 'react';
 import { motion } from "motion/react";
 import { Link } from 'react-router-dom';
+import memberData from './team.json';
+import member1 from '../lib/images/member1.jpeg';
+import member2 from '../lib/images/member2.jpeg';
+import member3 from '../lib/images/member3.jpeg';
+import member4 from '../lib/images/member4.jpeg';
+import member5 from '../lib/images/member5.jpeg';
+import member6 from '../lib/images/member6.jpeg';
+
+
 
 // Icon components
 const ShieldIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
@@ -192,12 +201,15 @@ export const Landing: React.FC = () => {
             <h2 className="text-4xl font-bold mb-3">Our Team</h2>
             <p className="text-slate-300/80">Builders behind ChainID</p>
           </div>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.05 }} className="bg-slate-900/60 rounded-xl border border-slate-800/60 p-4 text-center shadow-lg">
-                <img src={`https://picsum.photos/seed/chainid${i}/240/240`} alt={`Member ${i}`} className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border border-slate-700" />
-                <div className="text-lg font-semibold">Member {i}</div>
-                <div className="text-sm text-slate-400">Blockchain Engineer</div>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
+            {memberData.map((member) => (
+              <motion.div key={member.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: member.id * 0.05 }} className="bg-slate-900/60 rounded-xl border border-slate-800/60 p-4 text-center shadow-lg">
+                <img src={member.id === 1 ? member1 : member.id === 2 ? member2 : member.id === 3 ? member3 : member.id === 4 ? member4 : member.id === 5 ? member5 : member.id === 6 ? member6 : ''} alt={`${member.name}`} className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border border-slate-700" />
+
+                {/* <img src={`https://picsum.photos/seed/chainid${i}/240/240`} alt={`Member ${i}`} className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border border-slate-700" /> */}
+
+                <div className="text-lg font-semibold">{member.name}</div>
+                <div className="text-sm text-slate-400">{member.role}</div>
               </motion.div>
             ))}
           </div>

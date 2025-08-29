@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "name": "Arafin Alam",
+        "role": "Team Leader"
+    },
+    {
+        "id": 2,
+        "name": "Mobashshir Shahriar Arnab",
+        "role": "Smart Contract Developer"
+    },
+    {
+        "id": 3,
+        "name": "Borhan Uddin Ashik",
+        "role": "Senior Developer"
+    },
+    {
+        "id": 4,
+        "name": "Al Bariul",
+        "role": "Junior Developer"
+    },
+    {
+        "id": 5,
+        "name": "Humaira Nahar Shochona",
+        "role": "Researchers"
+    },
+    {
+        "id": 6,
+        "name": "Asifa Afrin Aupi",
+        "role": "Technical content writer"
+    }
+]
