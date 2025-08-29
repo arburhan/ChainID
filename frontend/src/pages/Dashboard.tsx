@@ -38,7 +38,7 @@ export function Dashboard() {
   const [payload, setPayload] = useState('{"type":"KYC","level":"basic"}')
   const [result, setResult] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [backendSigner, setBackendSigner] = useState<{address?: string, balance?: string} | null>(null)
+  const [backendSigner, setBackendSigner] = useState<{ address?: string, balance?: string } | null>(null)
   const [isGranting, setIsGranting] = useState(false)
   const [issuerGranted, setIssuerGranted] = useState(false)
   const [issueSuccess, setIssueSuccess] = useState<{ hash?: string } | null>(null)
@@ -93,7 +93,7 @@ export function Dashboard() {
   async function onIssue(e: React.FormEvent) {
     e.preventDefault()
     if (!address) return
-    
+
     setIsLoading(true)
     try {
       const data = await issueCredential(to, uri, JSON.parse(payload))
@@ -208,47 +208,43 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100">
+      <header className="bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-700/40">
+                <span className="text-white font-bold text-lg">Ξ</span>
+              </div>
+              <span className="text-2xl font-bold">ChainID</span>
+            </div>
             <div className="flex items-center space-x-4">
-              <Link to="/" className="flex items-center space-x-2 text-gray-600 hover:text-purple-600 transition-colors">
+              <Link to="/" className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors">
                 <ArrowLeftIcon />
                 <span>Back to Home</span>
               </Link>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">O</span>
-              </div>
-              <span className="text-2xl font-bold text-gray-900">ChainID</span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-700/40">
                 <ChartBarIcon className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">ChainID Dashboard</h1>
-                <p className="text-gray-600">Manage your digital identity and issue credentials</p>
+                <h1 className="text-3xl font-bold text-white">ChainID Dashboard</h1>
+                <p className="text-slate-300">Manage your digital identity and issue credentials</p>
               </div>
             </div>
-            
-            <button 
-              className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center space-x-2 ${
-                address 
-                  ? 'bg-green-100 text-green-800 border border-green-200' 
-                  : 'bg-purple-600 text-white hover:bg-purple-700'
-              }`} 
+            <button
+              className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center space-x-2 ${address
+                  ? 'bg-green-700 text-green-100 border border-green-400'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                }`}
               onClick={onConnect}
               disabled={isLoading}
             >
@@ -258,19 +254,19 @@ export function Dashboard() {
           </div>
 
           {address && (
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <p className="text-sm text-gray-600">
-                Connected Wallet: <span className="font-mono text-purple-600">{address.slice(0, 6)}...{address.slice(-4)}</span>
+            <div className="bg-slate-900 p-4 rounded-lg border border-indigo-900">
+              <p className="text-sm text-slate-300">
+                Connected Wallet: <span className="font-mono text-indigo-400">{address.slice(0, 6)}...{address.slice(-4)}</span>
               </p>
               {backendSigner?.address && (
-                <div className="mt-2 text-sm text-gray-600">
-                  Backend Signer: <span className="font-mono text-blue-600">{backendSigner.address}</span>
+                <div className="mt-2 text-sm text-slate-300">
+                  Backend Signer: <span className="font-mono text-blue-400">{backendSigner.address}</span>
                   {backendSigner.balance && <span className="ml-2">(Balance: {backendSigner.balance} ETH)</span>}
                   <button
                     type="button"
                     onClick={onGrantIssuer}
                     disabled={isGranting || issuerGranted}
-                    className={`ml-3 inline-flex items-center px-3 py-1.5 rounded text-white text-xs disabled:opacity-50 ${issuerGranted ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+                    className={`ml-3 inline-flex items-center px-3 py-1.5 rounded text-white text-xs disabled:opacity-50 ${issuerGranted ? 'bg-green-700' : 'bg-blue-700 hover:bg-blue-800'}`}
                   >
                     {issuerGranted ? 'Issuer Granted' : isGranting ? 'Granting...' : 'Grant Issuer Role'}
                   </button>
@@ -282,79 +278,74 @@ export function Dashboard() {
 
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Issue Credential Section */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+          <div className="bg-slate-900 rounded-2xl shadow-lg border border-indigo-900 p-8">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-700/40">
                 <DocumentIcon className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900">Issue Credential (Issuer)</h2>
+              <h2 className="text-xl font-semibold text-white">Issue Credential (Issuer)</h2>
             </div>
-            
             <form className="space-y-4" onSubmit={onIssue}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-200 mb-2">
                   Recipient Address
                 </label>
-                <input 
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" 
-                  placeholder="0x..." 
-                  value={to} 
+                <input
+                  className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  placeholder="0x..."
+                  value={to}
                   onChange={e => setTo(e.target.value)}
                   required
                 />
               </div>
-              
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-200 mb-2">
                   Metadata URI
                 </label>
-                <input 
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" 
-                  placeholder="ipfs://..." 
-                  value={uri} 
+                <input
+                  className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  placeholder="ipfs://..."
+                  value={uri}
                   onChange={e => setUri(e.target.value)}
                   required
                 />
               </div>
-              
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-200 mb-2">
                   Credential Payload (JSON)
                 </label>
-                <textarea 
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-mono text-sm" 
-                  rows={4} 
-                  value={payload} 
+                <textarea
+                  className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors font-mono text-sm"
+                  rows={4}
+                  value={payload}
                   onChange={e => setPayload(e.target.value)}
                   required
                 />
               </div>
-              
-              <button 
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+              <button
+                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-indigo-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 type="submit"
                 disabled={isLoading || !address || !to || !uri || !payload}
               >
                 {isLoading ? 'Issuing Credential...' : 'Issue Credential'}
               </button>
             </form>
-
             {/* Result Display */}
             {result && (
               <div className="mt-6 p-4 rounded-lg border transition-all">
                 {result.error ? (
-                  <div className="bg-red-50 border-red-200">
-                    <h3 className="text-sm font-semibold text-red-800 mb-2">Error</h3>
-                    <p className="text-red-700 text-sm">{result.error}</p>
+                  <div className="bg-red-950 border-red-900">
+                    <h3 className="text-sm font-semibold text-red-400 mb-2">Error</h3>
+                    <p className="text-red-300 text-sm">{result.error}</p>
                   </div>
                 ) : (
-                  <div className="bg-green-50 border-green-200">
-                    <h3 className="text-sm font-semibold text-green-800 mb-2">{issueSuccess ? 'Credential Issued Successfully' : 'Operation Successful'}</h3>
+                  <div className="bg-green-950 border-green-900">
+                    <h3 className="text-sm font-semibold text-green-400 mb-2">{issueSuccess ? 'Credential Issued Successfully' : 'Operation Successful'}</h3>
                     {issueSuccess?.hash && (
-                      <p className="text-green-800 text-sm mb-2">Tx Hash: <span className="font-mono">{issueSuccess.hash}</span></p>
+                      <p className="text-green-300 text-sm mb-2">Tx Hash: <span className="font-mono">{issueSuccess.hash}</span></p>
                     )}
-                    <div className="bg-white p-3 rounded border border-green-200">
-                      <pre className="text-xs text-green-800 overflow-x-auto">
+                    <div className="bg-slate-800 p-3 rounded border border-green-900">
+                      <pre className="text-xs text-green-300 overflow-x-auto">
                         {JSON.stringify(result, null, 2)}
                       </pre>
                     </div>
@@ -365,53 +356,49 @@ export function Dashboard() {
           </div>
 
           {/* Get Started Section */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+          <div className="bg-slate-900 rounded-2xl shadow-lg border border-indigo-900 p-8">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-700/40">
                 <DocumentIcon className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900">Get Started</h2>
+              <h2 className="text-xl font-semibold text-white">Get Started</h2>
             </div>
-            
             <div className="space-y-4">
               <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 shadow-lg shadow-indigo-700/40">
                   <span className="text-white text-xs font-bold">1</span>
                 </div>
                 <div>
-                  <p className="text-gray-700">
-                    <Link to="/register" className="text-purple-600 hover:text-purple-700 font-medium">Register your DID</Link> on the Register page
+                  <p className="text-slate-300">
+                    <Link to="/register" className="text-indigo-400 hover:text-white font-medium">Register your DID</Link> on the Register page
                   </p>
                 </div>
               </div>
-              
               <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 shadow-lg shadow-indigo-700/40">
                   <span className="text-white text-xs font-bold">2</span>
                 </div>
                 <div>
-                  <p className="text-gray-700">
+                  <p className="text-slate-300">
                     Have an issuer address issue credentials to you using the form on the left
                   </p>
                 </div>
               </div>
-              
               <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 shadow-lg shadow-indigo-700/40">
                   <span className="text-white text-xs font-bold">3</span>
                 </div>
                 <div>
-                  <p className="text-gray-700">
+                  <p className="text-slate-300">
                     Respond to access requests with your signature and manage your identity
                   </p>
                 </div>
               </div>
             </div>
-
-            <div className="mt-8 p-6 bg-purple-50 rounded-xl border border-purple-100">
-              <h3 className="text-lg font-semibold text-purple-900 mb-3">Need Help?</h3>
-              <p className="text-purple-800 text-sm leading-relaxed">
-                Check out our documentation or contact support if you need assistance with 
+            <div className="mt-8 p-6 bg-indigo-950 rounded-xl border border-indigo-900">
+              <h3 className="text-lg font-semibold text-indigo-300 mb-3">Need Help?</h3>
+              <p className="text-indigo-200 text-sm leading-relaxed">
+                Check out our documentation or contact support if you need assistance with
                 setting up your digital identity or issuing credentials.
               </p>
             </div>
@@ -420,46 +407,46 @@ export function Dashboard() {
 
         {/* Access Request / Approve Section */}
         <div className="grid gap-8 lg:grid-cols-2 mt-8">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Request Access</h2>
+          <div className="bg-slate-900 rounded-2xl shadow-lg border border-indigo-900 p-8">
+            <h2 className="text-xl font-semibold text-white mb-6">Request Access</h2>
             <form className="space-y-4" onSubmit={onRequestAccess}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subject Address</label>
-                <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={subject} onChange={e => setSubject(e.target.value)} placeholder="0x..." required />
+                <label className="block text-sm font-medium text-slate-200 mb-2">Subject Address</label>
+                <input className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value={subject} onChange={e => setSubject(e.target.value)} placeholder="0x..." required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Purpose (JSON)</label>
-                <textarea className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-mono text-sm" rows={3} value={purpose} onChange={e => setPurpose(e.target.value)} required />
+                <label className="block text-sm font-medium text-slate-200 mb-2">Purpose (JSON)</label>
+                <textarea className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors font-mono text-sm" rows={3} value={purpose} onChange={e => setPurpose(e.target.value)} required />
               </div>
-              <button className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-900 transition-all disabled:opacity-50" disabled={!address || isRequesting}>{isRequesting ? 'Requesting...' : 'Request Access'}</button>
+              <button className="w-full bg-gradient-to-r from-indigo-600 to-indigo-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-indigo-900 transition-all disabled:opacity-50" disabled={!address || isRequesting}>{isRequesting ? 'Requesting...' : 'Request Access'}</button>
             </form>
             {requestOut && (
-              <div className="mt-4 p-3 rounded border bg-gray-50">
-                <pre className="text-xs text-gray-800 overflow-x-auto">{JSON.stringify(requestOut, null, 2)}</pre>
+              <div className="mt-4 p-3 rounded border bg-slate-800">
+                <pre className="text-xs text-indigo-300 overflow-x-auto">{JSON.stringify(requestOut, null, 2)}</pre>
               </div>
             )}
           </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Approve Access</h2>
+          <div className="bg-slate-900 rounded-2xl shadow-lg border border-indigo-900 p-8">
+            <h2 className="text-xl font-semibold text-white mb-6">Approve Access</h2>
             <form className="space-y-4" onSubmit={onApproveAccess}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Request ID</label>
-                <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={reqId} onChange={e => setReqId(e.target.value)} placeholder="0x..." required />
+                <label className="block text-sm font-medium text-slate-200 mb-2">Request ID</label>
+                <input className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value={reqId} onChange={e => setReqId(e.target.value)} placeholder="0x..." required />
               </div>
               <div className="flex items-center gap-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Signature</label>
-                <button type="button" onClick={onSignWithWallet} disabled={!reqId || !address || isSigning} className="ml-auto px-3 py-2 rounded bg-purple-600 text-white text-xs hover:bg-purple-700 disabled:opacity-50">{isSigning ? 'Signing...' : 'Sign with Wallet'}</button>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Signature</label>
+                <button type="button" onClick={onSignWithWallet} disabled={!reqId || !address || isSigning} className="ml-auto px-3 py-2 rounded bg-indigo-600 text-white text-xs hover:bg-indigo-700 disabled:opacity-50">{isSigning ? 'Signing...' : 'Sign with Wallet'}</button>
               </div>
-              <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={signature} onChange={e => setSignature(e.target.value)} placeholder="0x..." required />
+              <input className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value={signature} onChange={e => setSignature(e.target.value)} placeholder="0x..." required />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Optional Proof (bytes hex)</label>
-                <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={proof} onChange={e => setProof(e.target.value)} placeholder="0x..." />
+                <label className="block text-sm font-medium text-slate-200 mb-2">Optional Proof (bytes hex)</label>
+                <input className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" value={proof} onChange={e => setProof(e.target.value)} placeholder="0x..." />
               </div>
-              <button className="w-full bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-700 hover:to-green-900 transition-all disabled:opacity-50" disabled={!address || isApproving}>{isApproving ? 'Approving...' : 'Approve Access'}</button>
+              <button className="w-full bg-gradient-to-r from-green-700 to-green-900 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-800 hover:to-green-950 transition-all disabled:opacity-50" disabled={!address || isApproving}>{isApproving ? 'Approving...' : 'Approve Access'}</button>
             </form>
             {approveOut && (
-              <div className="mt-4 p-3 rounded border bg-gray-50">
-                <pre className="text-xs text-gray-800 overflow-x-auto">{JSON.stringify(approveOut, null, 2)}</pre>
+              <div className="mt-4 p-3 rounded border bg-slate-800">
+                <pre className="text-xs text-green-300 overflow-x-auto">{JSON.stringify(approveOut, null, 2)}</pre>
               </div>
             )}
           </div>
