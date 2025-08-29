@@ -1,0 +1,41 @@
+Registration Result: 
+{
+  "ok": true,
+  "txHash": "0xd19897eab1769b88ae472d9a04b70256d7ede706e319a18c04c5cb8f686a02df",
+  "profileHash": "0x6f3d521207608ca619eac25d1ce67022dd77ef6d27693622b6775a0e365400a1"
+}
+
+issue credentials: 
+-------------------------------
+0x14dC79964da2C08b23698B3D3cc7Ca32193d9955
+https://ipfs.io/ipfs/bafybeidezyacra5wulsxx2xkmkmgzwrl25kbnt6zv3seru4axtl2l5nigq
+{
+"type": "KYC",
+"level": "basic",
+"subject": "<recipient address>",
+"issuer": "<backend signer or issuer address>",
+"issuedAt": 1724937600
+}
+
+{
+  "type": "KYC",
+  "level": "basic",
+  "subject": "0xb0A21939a70147A3DA4e872Dad2f199bDce0A456",
+  "issuer": "0x2E63e8dBd9BC763a4b23537a8A77243c65BDc422",
+  "issuedAt": 1724937600
+}
+
+Request Access
+------------------
+
+wallet: 0xb0A21939a70147A3DA4e872Dad2f199bDce0A456
+purpose: 
+{
+"reason": "KYC verification",
+"scope": ["name", "dob"],
+"expiresAt": 1750000000
+}
+
+
+Approve Access
+--------------------

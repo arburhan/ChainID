@@ -1,11 +1,11 @@
 import { ethers } from 'ethers';
 
 // Contract ABIs - Import from the local abi folder
-import identityABI from './abi/identity.json'
-import credentialsABI from './abi/credentialsCntract.json';
-import accessControlABI from './abi/accessControl.json';
-import auditControlABI from './abi/auditControl.json';
-import mockVerifierABI from './abi/mockVerifier.json';
+import identityArtifact from './abi/identity.json'
+import credentialsArtifact from './abi/credentialsCntract.json';
+import accessControlArtifact from './abi/accessControl.json';
+import auditControlArtifact from './abi/auditControl.json';
+import mockVerifierArtifact from './abi/mockVerifier.json';
 
 // Contract addresses (will be loaded from environment or API)
 export const CONTRACT_ADDRESSES = {
@@ -18,11 +18,11 @@ export const CONTRACT_ADDRESSES = {
 
 // Contract ABIs
 export const CONTRACT_ABIS = {
-  IDENTITY: identityABI,
-  CREDENTIAL: credentialsABI,
-  ACCESS_CONTROL: accessControlABI,
-  AUDIT: auditControlABI,
-  MOCK_VERIFIER: mockVerifierABI
+  IDENTITY: (identityArtifact as any).abi || (identityArtifact as any),
+  CREDENTIAL: (credentialsArtifact as any).abi || (credentialsArtifact as any),
+  ACCESS_CONTROL: (accessControlArtifact as any).abi || (accessControlArtifact as any),
+  AUDIT: (auditControlArtifact as any).abi || (auditControlArtifact as any),
+  MOCK_VERIFIER: (mockVerifierArtifact as any).abi || (mockVerifierArtifact as any)
 };
 
 // Network configuration

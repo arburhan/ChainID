@@ -3,6 +3,7 @@ import { connectWallet } from '../lib/wallet'
 import { issueCredential, getSignerInfo, addIssuer, requestAccess } from '../lib/api'
 import { ethers } from 'ethers'
 import { CONTRACT_ABIS, CONTRACT_ADDRESSES, createContractInstance } from '../lib/contracts'
+import axios from 'axios'
 import { Link } from 'react-router-dom'
 
 // Icon components
@@ -49,6 +50,9 @@ export function Dashboard() {
   const [signature, setSignature] = useState('')
   const [proof, setProof] = useState('')
   const [approveOut, setApproveOut] = useState<any>(null)
+  const [isRequesting, setIsRequesting] = useState(false)
+  const [isApproving, setIsApproving] = useState(false)
+  const [isSigning, setIsSigning] = useState(false)
 
   async function onConnect() {
     setIsLoading(true)
@@ -110,6 +114,7 @@ export function Dashboard() {
 
   async function onRequestAccess(e: React.FormEvent) {
     e.preventDefault()
+    setIsRequesting(true)
     try {
       const data = await requestAccess(address, subject, JSON.parse(purpose))
       setRequestOut(data)
@@ -130,23 +135,75 @@ export function Dashboard() {
     } catch (error) {
       console.error('Failed to request access:', error)
       setRequestOut({ error: 'Failed to request access.' })
+    } finally {
+      setIsRequesting(false)
     }
   }
 
   async function onApproveAccess(e: React.FormEvent) {
     e.preventDefault()
+    setIsApproving(true)
     try {
+      // Validate requestId format (bytes32)
+      if (!/^0x[0-9a-fA-F]{64}$/.test(reqId.trim())) {
+        setApproveOut({ error: 'Invalid Request ID. Use the bytes32 value returned from Request Access (0x + 64 hex).' })
+        return
+      }
+      // Resolve access control contract address (env or backend fallback)
+      let accessAddress = CONTRACT_ADDRESSES.ACCESS_CONTROL
+      if (!accessAddress || !ethers.isAddress(accessAddress)) {
+        try {
+          const baseURL = (import.meta as any).env.VITE_BACKEND_URL || 'http://localhost:4000'
+          const { data } = await axios.get(`${baseURL}/api/contracts/addresses`)
+          accessAddress = data?.addresses?.accessControl || ''
+        } catch (e) {
+          // ignore, will be validated below
+        }
+      }
+      if (!accessAddress || !ethers.isAddress(accessAddress)) {
+        setApproveOut({ error: 'ACCESS_CONTROL address not set. Set VITE_ACCESS_CONTROL_CONTRACT_ADDRESS or ensure backend /api/contracts/addresses works.' })
+        return
+      }
       const eth: any = (window as any).ethereum
       if (!eth) throw new Error('No wallet provider')
       const provider = new ethers.BrowserProvider(eth)
       const signer = await provider.getSigner()
-      const access = createContractInstance(CONTRACT_ADDRESSES.ACCESS_CONTROL, CONTRACT_ABIS.ACCESS_CONTROL, signer)
+      const access = createContractInstance(accessAddress, CONTRACT_ABIS.ACCESS_CONTROL, signer)
+      // Ensure the connected wallet IS the subject for this requestId
+      try {
+        const req = await (access as any).requestOf(reqId)
+        const subjectOnChain: string = req?.subject || req?.[1] || ''
+        const connected = (await signer.getAddress())
+        if (!subjectOnChain || connected.toLowerCase() !== subjectOnChain.toLowerCase()) {
+          setApproveOut({ error: `Please switch wallet to subject address ${subjectOnChain} to approve this request.` })
+          return
+        }
+      } catch (_e) {
+        // If we cannot read, proceed; contract call will still enforce and revert if wrong
+      }
       const tx = await (access as any).approve(reqId as any, signature as any, (proof && proof !== '') ? proof : '0x')
       const receipt = await tx.wait()
       setApproveOut({ success: true, transaction: receipt })
     } catch (error) {
       console.error('Failed to approve access:', error)
       setApproveOut({ error: 'Failed to approve access.' })
+    } finally {
+      setIsApproving(false)
+    }
+  }
+
+  async function onSignWithWallet() {
+    try {
+      setIsSigning(true)
+      const eth: any = (window as any).ethereum
+      if (!eth) throw new Error('No wallet provider')
+      if (!reqId || !address) throw new Error('Missing request ID or wallet')
+      const sig = await eth.request({ method: 'personal_sign', params: [reqId, address] })
+      if (typeof sig === 'string') setSignature(sig)
+    } catch (e) {
+      console.error('Failed to sign:', e)
+    } finally {
+      setIsSigning(false)
     }
   }
 
@@ -374,7 +431,7 @@ export function Dashboard() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Purpose (JSON)</label>
                 <textarea className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors font-mono text-sm" rows={3} value={purpose} onChange={e => setPurpose(e.target.value)} required />
               </div>
-              <button className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-900 transition-all disabled:opacity-50" disabled={!address}>Request Access</button>
+              <button className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-900 transition-all disabled:opacity-50" disabled={!address || isRequesting}>{isRequesting ? 'Requesting...' : 'Request Access'}</button>
             </form>
             {requestOut && (
               <div className="mt-4 p-3 rounded border bg-gray-50">
@@ -389,15 +446,16 @@ export function Dashboard() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Request ID</label>
                 <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={reqId} onChange={e => setReqId(e.target.value)} placeholder="0x..." required />
               </div>
-              <div>
+              <div className="flex items-center gap-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Signature</label>
-                <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={signature} onChange={e => setSignature(e.target.value)} placeholder="0x..." required />
+                <button type="button" onClick={onSignWithWallet} disabled={!reqId || !address || isSigning} className="ml-auto px-3 py-2 rounded bg-purple-600 text-white text-xs hover:bg-purple-700 disabled:opacity-50">{isSigning ? 'Signing...' : 'Sign with Wallet'}</button>
               </div>
+              <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={signature} onChange={e => setSignature(e.target.value)} placeholder="0x..." required />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Optional Proof (bytes hex)</label>
                 <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" value={proof} onChange={e => setProof(e.target.value)} placeholder="0x..." />
               </div>
-              <button className="w-full bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-700 hover:to-green-900 transition-all disabled:opacity-50" disabled={!address}>Approve Access</button>
+              <button className="w-full bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-700 hover:to-green-900 transition-all disabled:opacity-50" disabled={!address || isApproving}>{isApproving ? 'Approving...' : 'Approve Access'}</button>
             </form>
             {approveOut && (
               <div className="mt-4 p-3 rounded border bg-gray-50">

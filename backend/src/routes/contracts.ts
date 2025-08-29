@@ -101,19 +101,21 @@ router.post('/credential/issue', async (req, res) => {
 
     const contractService = getContractService();
     const result = await contractService.issueCredential(to, credentialHash, uri);
+    const makeJsonSafe = (obj: any) => JSON.parse(JSON.stringify(obj, (_k, v) => typeof v === 'bigint' ? v.toString() : v));
+    const safeTx = makeJsonSafe(result);
     try {
       const { CredentialModel } = await import('../models/Credential');
       await CredentialModel.create({
-        tokenId: result?.tokenId ?? '',
+        tokenId: (result as any)?.tokenId ?? '',
         to,
         credentialHash,
         uri,
-        txHash: result?.hash ?? result?.transactionHash ?? ''
+        txHash: (result as any)?.hash ?? (result as any)?.transactionHash ?? ''
       });
     } catch (e) {
       console.error('Failed to persist credential:', e);
     }
-    res.json({ success: true, transaction: result });
+    res.json({ success: true, transaction: safeTx });
   } catch (error: any) {
     console.error('Error issuing credential:', error);
     if (error.message.includes('bad address checksum') || error.message.includes('Invalid Ethereum address')) {

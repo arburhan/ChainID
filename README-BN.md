@@ -25,10 +25,7 @@
 ```json
 {
   "name": "Arifur Rahman",
-  "email": "arif@example.com",
   "nationalId": "NID-1234567890",
-  "birthDate": "1995-07-09",
-  "metadataURI": "ipfs://bafy.../profile.json"
 }
 ```
 
@@ -88,10 +85,7 @@ VITE_MOCK_VERIFIER_ADDRESS=0xYourMockVerifier
   "address": "0x1234...ABCD",
   "profile": {
     "name": "Arifur Rahman",
-    "email": "arif@example.com",
     "nationalId": "NID-1234567890",
-    "birthDate": "1995-07-09",
-    "metadataURI": "ipfs://bafy.../profile.json"
   }
 }
 ```
