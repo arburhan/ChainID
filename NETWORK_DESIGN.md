@@ -7,8 +7,8 @@ flowchart LR
   %% Layout: left→right, one straight column per layer to avoid line crossings
 
   subgraph U[User dApps]
-    company["Government"]
-    retailer["Telecommunication"]
+    Government["Government"]
+    Telecommunication["Telecommunication"]
   end
 
   subgraph G[Gateway]
@@ -38,11 +38,9 @@ flowchart LR
   end
 
   %% Straight fan-in/out
-  company --> gw
-  retailer --> gw
-  seller --> gw
-  buyer --> gw
-  verifier --> gw
+  Government --> gw
+  Telecommunication --> gw
+ 
 
   gw --> svcIdentity
   gw --> svcCredential
