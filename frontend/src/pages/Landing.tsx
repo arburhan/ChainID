@@ -8,6 +8,7 @@ import member3 from '../lib/images/member3.jpeg';
 import member4 from '../lib/images/member4.jpeg';
 import member5 from '../lib/images/member5.jpeg';
 import member6 from '../lib/images/member6.jpeg';
+import githubLogo from '../lib/images/github.png';
 
 
 
@@ -54,7 +55,7 @@ export const Landing: React.FC = () => {
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-700/40">
                 <span className="text-white font-bold text-lg">Ξ</span>
               </div>
-              <Link to="/" className="text-white text-2xl font-bold">ChainID </Link>
+              <Link to="/" className="text-white text-2xl font-bold">IdentiChain </Link>
 
             </div>
 
@@ -149,12 +150,12 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* How ChainID Works */}
+      {/* How IdentiChain Works */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">
-              How ChainID Works
+              How IdentiChain Works
             </h2>
             <p className="text-xl text-slate-300/80">
               Simple, secure, and completely under your control.
@@ -200,14 +201,14 @@ export const Landing: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-3">Our Team</h2>
-            <p className="text-slate-300/80">Builders behind ChainID</p>
+            <p className="text-slate-300/80">Builders behind IdentiChain</p>
           </div>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
             {memberData.map((member) => (
               <motion.div key={member.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: member.id * 0.05 }} className="bg-slate-900/60 rounded-xl border border-slate-800/60 p-4 text-center shadow-lg">
                 <img src={member.id === 1 ? member1 : member.id === 2 ? member2 : member.id === 3 ? member3 : member.id === 4 ? member4 : member.id === 5 ? member5 : member.id === 6 ? member6 : ''} alt={`${member.name}`} className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border border-slate-700" />
 
-                {/* <img src={`https://picsum.photos/seed/chainid${i}/240/240`} alt={`Member ${i}`} className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border border-slate-700" /> */}
+                {/* <img src={`https://picsum.photos/seed/IdentiChain${i}/240/240`} alt={`Member ${i}`} className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border border-slate-700" /> */}
 
                 <div className="text-lg font-semibold">{member.name}</div>
                 <div className="text-sm text-slate-400">{member.role}</div>
@@ -240,11 +241,19 @@ export const Landing: React.FC = () => {
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-700/40">
               <span className="text-white font-bold text-lg">O</span>
             </div>
-            <span className="text-2xl font-bold">ChainID</span>
+            <span className="text-2xl font-bold">IdentiChain</span>
           </div>
 
           <div className="text-sm text-slate-400">
             Built on Ethereum • Powered by zero-knowledge proofs
+          </div>
+          <div>
+            <span className="text-sm text-slate-400">© 2025 IdentiChain. All rights reserved.</span>
+          </div>
+          <div className="flex space-x-6">
+            <a href="https://github.com/arburhan/ChainID" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">
+              <img src={githubLogo} alt="github logo" className='w-12 h-12 ' />
+            </a>
           </div>
         </div>
       </footer>

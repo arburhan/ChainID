@@ -265,7 +265,7 @@ export function Dashboard() {
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-700/40">
                 <span className="text-white font-bold text-lg">Ξ</span>
               </div>
-              <span className="text-2xl font-bold">ChainID</span>
+              <span className="text-2xl font-bold">IdentiChain</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link to="/" className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors">
@@ -285,7 +285,7 @@ export function Dashboard() {
                 <ChartBarIcon className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-white">ChainID Dashboard</h1>
+                <h1 className="text-3xl font-bold text-white">IdentiChain Dashboard</h1>
                 <p className="text-slate-300">Manage your digital identity and issue credentials</p>
               </div>
             </div>

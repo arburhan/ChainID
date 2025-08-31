@@ -1,6 +1,6 @@
-# ChainID – Decentralized Identity on Ethereum (Sepolia)
+# IdentiChain – Decentralized Identity on Ethereum (Sepolia)
 
-ChainID is a self-sovereign identity (SSI) platform enabling users to control their identity data, request/approve access, and share verifiable credentials. It adapts the provided whitepaper to Ethereum Sepolia testnet with a full stack: Solidity smart contracts, Node.js backend, and a React + Tailwind frontend.
+IdentiChain is a self-sovereign identity (SSI) platform enabling users to control their identity data, request/approve access, and share verifiable credentials. It adapts the provided whitepaper to Ethereum Sepolia testnet with a full stack: Solidity smart contracts, Node.js backend, and a React + Tailwind frontend.
 
 ## Features
 - User-owned DIDs with hashes on-chain; sensitive data encrypted off-chain (MongoDB)

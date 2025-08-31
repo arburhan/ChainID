@@ -60,7 +60,7 @@ app.use('*', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 ChainID Backend Server running on port ${PORT}`);
+  console.log(`🚀 IdentiChain Backend Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
   console.log(`📋 Contract API: http://localhost:${PORT}/api/contracts`);

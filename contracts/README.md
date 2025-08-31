@@ -1,6 +1,6 @@
-# 🏗️ ChainID Smart Contracts
+# 🏗️ IdentiChain Smart Contracts
 
-This directory contains the smart contracts for the ChainID decentralized identity system.
+This directory contains the smart contracts for the IdentiChain decentralized identity system.
 
 ## 📁 Contract Structure
 

@@ -353,7 +353,7 @@ export const Telecommunication: React.FC = () => {
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-700/40">
                 <span className="text-white font-bold text-lg">Ξ</span>
               </div>
-              <Link to="/" className="text-white text-2xl font-bold">ChainID</Link>
+              <Link to="/" className="text-white text-2xl font-bold">IdentiChain</Link>
             </div>
 
             {/* Navigation */}

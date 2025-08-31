@@ -7,11 +7,8 @@ flowchart LR
   %% Layout: left→right, one straight column per layer to avoid line crossings
 
   subgraph U[User dApps]
-    company["Company dApp"]
-    retailer["Retailer dApp"]
-    seller["Seller dApp"]
-    buyer["Buyer dApp"]
-    verifier["Verifier dApp"]
+    company["Government"]
+    retailer["Telecommunication"]
   end
 
   subgraph G[Gateway]

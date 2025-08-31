@@ -59,7 +59,7 @@ export function Verify() {
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-700/40">
                 <span className="text-white font-bold text-lg">Ξ</span>
               </div>
-              <span className="text-2xl font-bold">ChainID</span>
+              <span className="text-2xl font-bold">IdentiChain</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link to="/" className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors">
@@ -153,7 +153,7 @@ export function Verify() {
           <div className="mt-8 p-6 bg-indigo-950 rounded-xl border border-indigo-900">
             <h3 className="text-lg font-semibold text-indigo-300 mb-3">How Verification Works</h3>
             <p className="text-indigo-200 text-sm leading-relaxed">
-              ChainID uses zero-knowledge proofs to verify credentials without revealing sensitive information.
+              IdentiChain uses zero-knowledge proofs to verify credentials without revealing sensitive information.
               The verification process checks the cryptographic proof against the blockchain to ensure authenticity
               while maintaining your privacy.
             </p>

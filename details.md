@@ -1,4 +1,4 @@
-## ChainID – Feature Brief (for Presentation)
+## IdentiChain – Feature Brief (for Presentation)
 
 ### 1) What this app does (high-level)
 - Register an identity (name + national ID → encrypted → profileHash → on-chain DID)

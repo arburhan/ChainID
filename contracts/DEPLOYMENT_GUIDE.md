@@ -1,4 +1,4 @@
-# 🚀 ChainID Smart Contract Deployment Guide
+# 🚀 IdentiChain Smart Contract Deployment Guide
 
 ## 📋 Prerequisites
 
