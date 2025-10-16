@@ -91,7 +91,7 @@ router.get('/identity/registered/:user', async (req, res) => {
 // Credential Contract Routes
 router.post('/credential/issue', async (req, res) => {
   try {
-    const { to, credentialHash, uri } = req.body;
+    const { to, credentialHash, uri, userEmail, userName, credentialType } = req.body;
     if (!to || !credentialHash || !uri) {
       return res.status(400).json({ 
         success: false, 
@@ -103,6 +103,7 @@ router.post('/credential/issue', async (req, res) => {
     const result = await contractService.issueCredential(to, credentialHash, uri);
     const makeJsonSafe = (obj: any) => JSON.parse(JSON.stringify(obj, (_k, v) => typeof v === 'bigint' ? v.toString() : v));
     const safeTx = makeJsonSafe(result);
+    
     try {
       const { CredentialModel } = await import('../models/Credential');
       await CredentialModel.create({
@@ -115,6 +116,24 @@ router.post('/credential/issue', async (req, res) => {
     } catch (e) {
       console.error('Failed to persist credential:', e);
     }
+
+    // Send email notification if user email is provided
+    if (userEmail && userName) {
+      try {
+        const { emailService } = await import('../services/emailService');
+        await emailService.sendCredentialIssuedEmail(
+          userEmail,
+          userName,
+          credentialType || 'Digital Credential',
+          (result as any)?.tokenId ?? 'Unknown',
+          (result as any)?.hash ?? (result as any)?.transactionHash ?? ''
+        );
+      } catch (emailError) {
+        console.error('Failed to send credential notification email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
+
     res.json({ success: true, transaction: safeTx });
   } catch (error: any) {
     console.error('Error issuing credential:', error);
@@ -145,7 +164,7 @@ router.post('/credential/revoke', async (req, res) => {
 // Access Control Contract Routes
 router.post('/access/request', async (req, res) => {
   try {
-    const { subject, purposeHash } = req.body;
+    const { subject, purposeHash, requester, purpose } = req.body;
     if (!subject || !purposeHash) {
       return res.status(400).json({ 
         success: false, 
@@ -155,6 +174,30 @@ router.post('/access/request', async (req, res) => {
 
     const contractService = getContractService();
     const requestId = await contractService.requestAccess(subject, purposeHash);
+    
+    // Send email notification to subject if they are registered
+    if (subject) {
+      try {
+        const { UserModel } = await import('../models/User');
+        const user = await UserModel.findOne({ walletAddress: subject });
+        
+        if (user && user.email) {
+          const { emailService } = await import('../services/emailService');
+          await emailService.sendAccessRequestEmail(
+            user.email,
+            user.name,
+            requester || 'Unknown',
+            purpose || 'Data access request',
+            requestId,
+            'Transaction hash not available' // We don't have tx hash from requestAccess
+          );
+        }
+      } catch (emailError) {
+        console.error('Failed to send access request notification email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
+    
     res.json({ success: true, requestId });
   } catch (error: any) {
     console.error('Error requesting access:', error);

@@ -45,6 +45,12 @@ const WalletIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   </svg>
 );
 
+const PersonIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+  </svg>
+);
+
 const DocumentIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 20 20">
     <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
@@ -58,7 +64,20 @@ const SearchIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
 );
 
 export const Telecommunication: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'verify' | 'dashboard'>('verify');
+  const [activeTab, setActiveTab] = useState<'create' | 'verify' | 'dashboard'>('create');
+
+  // Create Identity State (from Register.tsx)
+  const [profileData, setProfileData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    dateOfBirth: '',
+    nationality: '',
+    idNumber: ''
+  });
+  const [createResult, setCreateResult] = useState<any>(null);
+  const [isCreateLoading, setIsCreateLoading] = useState(false);
 
   // Verify Identity State (from Verify.tsx)
   const [tokenId, setTokenId] = useState('');
@@ -70,6 +89,9 @@ export const Telecommunication: React.FC = () => {
   const [to, setTo] = useState('');
   const [uri, setUri] = useState('ipfs://example');
   const [payload, setPayload] = useState('{"type":"KYC","level":"basic"}');
+  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  const [credentialType, setCredentialType] = useState('Telecom Credential');
   const [dashboardResult, setDashboardResult] = useState<any>(null);
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
   const [backendSigner, setBackendSigner] = useState<{ address?: string, balance?: string } | null>(null);
@@ -98,6 +120,48 @@ export const Telecommunication: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isValidHexHash = (value: string) => /^0x[0-9a-fA-F]{64}$/.test(value.trim());
+
+  // Create Identity Functions
+  async function onConnect() {
+    setIsCreateLoading(true);
+    try {
+      const result = await connectWallet();
+      if (result) {
+        setAddress(result.address);
+      }
+    } catch (error) {
+      console.error('Failed to connect wallet:', error);
+    } finally {
+      setIsCreateLoading(false);
+    }
+  }
+
+  async function onCreateIdentity(e: React.FormEvent) {
+    e.preventDefault();
+    if (!address) return;
+
+    setIsCreateLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'}/api/contracts/identity/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          profileData,
+          account: address
+        }),
+      });
+
+      const data = await response.json();
+      setCreateResult(data);
+    } catch (error) {
+      console.error('Failed to create identity:', error);
+      setCreateResult({ error: 'Failed to create identity. Please try again.' });
+    } finally {
+      setIsCreateLoading(false);
+    }
+  }
 
   // Verify Identity Functions
   async function onVerify(e: React.FormEvent) {
@@ -189,7 +253,14 @@ export const Telecommunication: React.FC = () => {
 
     setIsDashboardLoading(true);
     try {
-      const data = await issueCredential(to, uri, JSON.parse(payload));
+      const data = await issueCredential(
+        to, 
+        uri, 
+        JSON.parse(payload),
+        userEmail || undefined,
+        userName || undefined,
+        credentialType
+      );
       setDashboardResult(data);
       if (data?.success && data?.transaction?.hash) {
         setIssueSuccess({ hash: data.transaction.hash });
@@ -389,6 +460,16 @@ export const Telecommunication: React.FC = () => {
           <div className="flex justify-center mb-8">
             <div className="bg-slate-900/60 rounded-lg p-1 border border-slate-800/60">
               <button
+                onClick={() => setActiveTab('create')}
+                className={`px-6 py-3 rounded-md font-medium transition-all ${activeTab === 'create'
+                  ? 'bg-indigo-600 text-white shadow-lg'
+                  : 'text-slate-300 hover:text-white'
+                  }`}
+              >
+                <PersonIcon className="w-5 h-5 inline mr-2" />
+                Create Identity
+              </button>
+              <button
                 onClick={() => setActiveTab('verify')}
                 className={`px-6 py-3 rounded-md font-medium transition-all ${activeTab === 'verify'
                     ? 'bg-indigo-600 text-white shadow-lg'
@@ -413,6 +494,141 @@ export const Telecommunication: React.FC = () => {
 
           {/* Tab Content */}
           <div className="bg-slate-900/40 rounded-xl border border-slate-800/60 p-8">
+            {activeTab === 'create' && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                <h3 className="text-2xl font-bold mb-6 text-center">Create Telecom Identity</h3>
+                <div className="max-w-2xl mx-auto">
+                  <div className="mb-8 p-6 bg-indigo-950 rounded-xl border border-indigo-900">
+                    <h4 className="text-lg font-semibold text-white mb-4">Step 1: Connect Your Wallet</h4>
+                    <button
+                      className={`w-full px-6 py-3 rounded-lg font-semibold transition-all ${address
+                        ? 'bg-green-700 text-green-100 border border-green-400'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        }`}
+                      onClick={onConnect}
+                      disabled={isCreateLoading}
+                    >
+                      {isCreateLoading ? 'Connecting...' : address ? 'Wallet Connected' : 'Connect Wallet'}
+                    </button>
+                    {address && (
+                      <p className="mt-3 text-sm text-green-300">
+                        Connected: {address.slice(0, 6)}...{address.slice(-4)}
+                      </p>
+                    )}
+                  </div>
+
+                  {address && (
+                    <form onSubmit={onCreateIdentity} className="space-y-6">
+                      <h4 className="text-lg font-semibold text-white mb-4">Step 2: Enter Customer Information</h4>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-200 mb-2">Full Name</label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                            placeholder="John Doe"
+                            value={profileData.name}
+                            onChange={e => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-200 mb-2">Email</label>
+                          <input
+                            type="email"
+                            className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                            placeholder="john@example.com"
+                            value={profileData.email}
+                            onChange={e => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-200 mb-2">Phone Number</label>
+                          <input
+                            type="tel"
+                            className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                            placeholder="+1234567890"
+                            value={profileData.phone}
+                            onChange={e => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-200 mb-2">Date of Birth</label>
+                          <input
+                            type="date"
+                            className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                            value={profileData.dateOfBirth}
+                            onChange={e => setProfileData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-200 mb-2">Nationality</label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                            placeholder="American"
+                            value={profileData.nationality}
+                            onChange={e => setProfileData(prev => ({ ...prev, nationality: e.target.value }))}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-200 mb-2">ID Number</label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                            placeholder="123456789"
+                            value={profileData.idNumber}
+                            onChange={e => setProfileData(prev => ({ ...prev, idNumber: e.target.value }))}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200 mb-2">Address</label>
+                        <textarea
+                          className="w-full px-4 py-3 bg-slate-800 text-slate-100 border border-indigo-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                          rows={3}
+                          placeholder="123 Main St, City, State, Country"
+                          value={profileData.address}
+                          onChange={e => setProfileData(prev => ({ ...prev, address: e.target.value }))}
+                          required
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-indigo-600 to-indigo-800 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-indigo-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isCreateLoading}
+                      >
+                        {isCreateLoading ? 'Creating Identity...' : 'Create Identity'}
+                      </button>
+                    </form>
+                  )}
+
+                  {createResult && (
+                    <div className="mt-8 p-6 bg-slate-800 rounded-xl border border-slate-700">
+                      <h4 className="text-lg font-semibold text-white mb-4">Result</h4>
+                      <pre className="text-sm text-slate-300 overflow-x-auto">
+                        {JSON.stringify(createResult, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
             {activeTab === 'verify' && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <h3 className="text-2xl font-bold mb-6 text-center">Telecom Identity Verification</h3>
@@ -651,6 +867,34 @@ export const Telecommunication: React.FC = () => {
                           value={to}
                           onChange={e => setTo(e.target.value)}
                           required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200 mb-2">User Email (for notification)</label>
+                        <input
+                          type="email"
+                          className="w-full px-4 py-3 bg-slate-700 text-slate-100 border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                          placeholder="user@example.com"
+                          value={userEmail}
+                          onChange={e => setUserEmail(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200 mb-2">User Name (for notification)</label>
+                        <input
+                          className="w-full px-4 py-3 bg-slate-700 text-slate-100 border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                          placeholder="John Doe"
+                          value={userName}
+                          onChange={e => setUserName(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200 mb-2">Credential Type</label>
+                        <input
+                          className="w-full px-4 py-3 bg-slate-700 text-slate-100 border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                          placeholder="Telecom Credential"
+                          value={credentialType}
+                          onChange={e => setCredentialType(e.target.value)}
                         />
                       </div>
                       <div>

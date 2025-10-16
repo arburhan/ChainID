@@ -12,10 +12,17 @@ export async function register(address: string, profile: any) {
   return data
 }
 
-export async function issueCredential(to: string, metadataURI: string, payload: any) {
+export async function issueCredential(to: string, metadataURI: string, payload: any, userEmail?: string, userName?: string, credentialType?: string) {
   // Compute bytes32 hash for credentialHash from the URI
   const credentialHash = ethers.keccak256(ethers.toUtf8Bytes(metadataURI))
-  const { data } = await api.post('/api/contracts/credential/issue', { to, credentialHash, uri: metadataURI })
+  const { data } = await api.post('/api/contracts/credential/issue', { 
+    to, 
+    credentialHash, 
+    uri: metadataURI,
+    userEmail,
+    userName,
+    credentialType
+  })
   return data
 }
 
@@ -32,7 +39,12 @@ export async function addIssuer(account: string) {
 export async function requestAccess(requester: string, subject: string, purpose: any) {
   // Hash purpose JSON to bytes32 for on-chain call
   const purposeHash = ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(purpose)))
-  const { data } = await api.post('/api/contracts/access/request', { subject, purposeHash })
+  const { data } = await api.post('/api/contracts/access/request', { 
+    subject, 
+    purposeHash,
+    requester,
+    purpose: JSON.stringify(purpose)
+  })
   return data
 }
 
@@ -48,5 +60,31 @@ export async function verifyCredential(tokenId: string) {
 
 export async function verifyProfileHash(profileHash: string) {
   const { data } = await api.post('/api/verifyProfileHash', { profileHash })
+  return data
+}
+
+// User API functions
+export async function registerUser(walletAddress: string, email: string, name: string, phone?: string) {
+  const { data } = await api.post('/api/user/register', { walletAddress, email, name, phone })
+  return data
+}
+
+export async function getUser(walletAddress: string) {
+  const { data } = await api.get(`/api/user/${walletAddress}`)
+  return data
+}
+
+export async function updateUser(walletAddress: string, email?: string, name?: string, phone?: string) {
+  const { data } = await api.put(`/api/user/${walletAddress}`, { email, name, phone })
+  return data
+}
+
+export async function getUserCredentials(walletAddress: string) {
+  const { data } = await api.get(`/api/user/${walletAddress}/credentials`)
+  return data
+}
+
+export async function getUserAccessRequests(walletAddress: string) {
+  const { data } = await api.get(`/api/user/${walletAddress}/access-requests`)
   return data
 }

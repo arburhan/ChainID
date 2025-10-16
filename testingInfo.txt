@@ -12,8 +12,8 @@ https://ipfs.io/ipfs/bafybeidezyacra5wulsxx2xkmkmgzwrl25kbnt6zv3seru4axtl2l5nigq
 {
 "type": "KYC",
 "level": "basic",
-"subject": "<recipient address>",
-"issuer": "<backend signer or issuer address>",
+"subject": "<নাগরিক ডাটা>",
+"issuer": "<backend signer or issuer address/ যে ইস্যু করছে>",
 "issuedAt": 1724937600
 }
 
@@ -48,7 +48,25 @@ Approve Access
 
 
 
+Recipient Address কে
+Dashboard → Issue Credential ফর্মের Recipient Address হলো ## ক্রেডেনশিয়াল হোল্ডারের ওয়ালেট অ্যাড্রেস (EOA). 
+এখানেই ERC721 credential mint হয়. Contract receipt-এ:
+from: issuer (caller)
+to: Credential contract address
+holder: আপনি যে Recipient Address দিয়েছেন (mint recipient)
 
+Metadata কেন লাগে
+tokenURI হিসেবে অফ-চেইন JSON (IPFS) পয়েন্ট করে; এতে ক্রেডেনশিয়ালের বর্ণনা/ফিল্ড থাকে।
+আমরা URI থেকে keccak256 করে bytes32 credentialHash তৈরি করে অন-চেইনে পাঠাই; তাই অন-চেইন হালকা/ইমিউটেবল রেফারেন্স, অফ-চেইনে রিচ ডেটা থাকে।
+Request Access-এ কার address যাচ্ছে
+আপনার এই ইম্প্লিমেন্টেশনে Request Access backend API দিয়ে হয়; অন-চেইনে requester হয় backend signer (server wallet). 
+Subject Address আপনি ফর্মে দেন—ওই subject-ই পরে approve করবে।
+UI-তে connected wallet address দেখানো হয়, কিন্তু on-chain requester = server signer (বর্তমান সেটআপে) শেষ পর্যন্ত কী রিটার্ন করে
+Issue Credential: { success: true, transaction: receipt, tokenId } (receipt UI-তে দেখাচ্ছে; DB-তেও save করি)
+Request Access: { success: true, requestId } (bytes32; UI-তে দেখাচ্ছে)
+Approve Access: { success: true, transaction: receipt } (আমরা ব্রাউজার থেকেই contract approve করছি)
+Verify (mock): { success: true, isValid } (non-empty proof হলে true)
+চাইলে Request Access-ও ফ্রন্টএন্ড থেকে সরাসরি contract-এ পাঠাতে পারি, তখন requester হবে আপনার connected wallet।
 
 
 
@@ -101,21 +119,3 @@ Bottom line: approved=true সহ requestId হলো consent proof. এই প�
 
 
 
-Recipient Address কে
-Dashboard → Issue Credential ফর্মের Recipient Address হলো # ক্রেডেনশিয়াল হোল্ডারের ওয়ালেট অ্যাড্রেস (EOA). 
-এখানেই ERC721 credential mint হয়. Contract receipt-এ:
-from: issuer (caller)
-to: Credential contract address
-holder: আপনি যে Recipient Address দিয়েছেন (mint recipient)
-Metadata কেন লাগে
-tokenURI হিসেবে অফ-চেইন JSON (IPFS) পয়েন্ট করে; এতে ক্রেডেনশিয়ালের বর্ণনা/ফিল্ড থাকে।
-আমরা URI থেকে keccak256 করে bytes32 credentialHash তৈরি করে অন-চেইনে পাঠাই; তাই অন-চেইন হালকা/ইমিউটেবল রেফারেন্স, অফ-চেইনে রিচ ডেটা থাকে।
-Request Access-এ কার address যাচ্ছে
-আপনার এই ইম্প্লিমেন্টেশনে Request Access backend API দিয়ে হয়; অন-চেইনে requester হয় backend signer (server wallet). 
-Subject Address আপনি ফর্মে দেন—ওই subject-ই পরে approve করবে।
-UI-তে connected wallet address দেখানো হয়, কিন্তু on-chain requester = server signer (বর্তমান সেটআপে) শেষ পর্যন্ত কী রিটার্ন করে
-Issue Credential: { success: true, transaction: receipt, tokenId } (receipt UI-তে দেখাচ্ছে; DB-তেও save করি)
-Request Access: { success: true, requestId } (bytes32; UI-তে দেখাচ্ছে)
-Approve Access: { success: true, transaction: receipt } (আমরা ব্রাউজার থেকেই contract approve করছি)
-Verify (mock): { success: true, isValid } (non-empty proof হলে true)
-চাইলে Request Access-ও ফ্রন্টএন্ড থেকে সরাসরি contract-এ পাঠাতে পারি, তখন requester হবে আপনার connected wallet।

@@ -77,6 +77,9 @@ export const Government: React.FC = () => {
   const [to, setTo] = useState('');
   const [uri, setUri] = useState('ipfs://example');
   const [payload, setPayload] = useState('{"type":"KYC","level":"basic"}');
+  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  const [credentialType, setCredentialType] = useState('Government Credential');
   const [dashboardResult, setDashboardResult] = useState<any>(null);
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
   const [backendSigner, setBackendSigner] = useState<{ address?: string, balance?: string } | null>(null);
@@ -250,7 +253,14 @@ export const Government: React.FC = () => {
 
     setIsDashboardLoading(true);
     try {
-      const data = await issueCredential(to, uri, JSON.parse(payload));
+      const data = await issueCredential(
+        to, 
+        uri, 
+        JSON.parse(payload),
+        userEmail || undefined,
+        userName || undefined,
+        credentialType
+      );
       setDashboardResult(data);
       if (data?.success && data?.transaction?.hash) {
         setIssueSuccess({ hash: data.transaction.hash });
@@ -509,7 +519,7 @@ export const Government: React.FC = () => {
 
                   {address && (
                     <form className="space-y-6" onSubmit={onCreateSubmit}>
-                      <h4 className="text-lg font-semibold text-white mb-4">Step 2: Enter Your Information</h4>
+                      <h4 className="text-lg font-semibold text-white mb-4">Step 2: Enter Citizen  Information</h4>
                       <div>
                         <label className="block text-sm font-medium text-slate-200 mb-2">Full Name</label>
                         <input
@@ -833,6 +843,34 @@ export const Government: React.FC = () => {
                           value={to}
                           onChange={e => setTo(e.target.value)}
                           required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200 mb-2">User Email (for notification)</label>
+                        <input
+                          type="email"
+                          className="w-full px-4 py-3 bg-slate-700 text-slate-100 border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                          placeholder="user@example.com"
+                          value={userEmail}
+                          onChange={e => setUserEmail(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200 mb-2">User Name (for notification)</label>
+                        <input
+                          className="w-full px-4 py-3 bg-slate-700 text-slate-100 border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                          placeholder="John Doe"
+                          value={userName}
+                          onChange={e => setUserName(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-200 mb-2">Credential Type</label>
+                        <input
+                          className="w-full px-4 py-3 bg-slate-700 text-slate-100 border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                          placeholder="Government Credential"
+                          value={credentialType}
+                          onChange={e => setCredentialType(e.target.value)}
                         />
                       </div>
                       <div>

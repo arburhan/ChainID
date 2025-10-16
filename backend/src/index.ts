@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import mongoose from "mongoose";
 import contractRoutes from './routes/contracts';
 import { apiRouter } from './routes/api';
+import userRoutes from './routes/user';
 
 
 // Load environment variables from .env file
@@ -36,6 +37,9 @@ app.get('/health', (req, res) => {
 
 // Contract routes
 app.use('/api/contracts', contractRoutes);
+
+// User routes
+app.use('/api/user', userRoutes);
 
 // Other API routes
 app.use('/api', apiRouter);

@@ -107,7 +107,7 @@ export function Register() {
 
           {address && (
             <form className="space-y-6" onSubmit={onSubmit}>
-              <h2 className="text-lg font-semibold text-white mb-4">Step 2: Enter Your Information</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">Step 2: Enter Citizen Information</h2>
 
               <div>
                 <label className="block text-sm font-medium text-slate-200 mb-2">

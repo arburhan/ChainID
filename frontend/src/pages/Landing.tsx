@@ -100,6 +100,9 @@ export const Landing: React.FC = () => {
             <Link to="/telecommunication" className="border-2 border-indigo-400/50 text-indigo-200 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-500/10 transition-colors">
               Telecom Portal
             </Link>
+            <Link to="/user-registration" className="border-2 border-green-400/50 text-green-200 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-500/10 transition-colors">
+              User Registration
+            </Link>
           </motion.div>
         </div>
       </section>
@@ -196,6 +199,84 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
+      {/* Why IdentiChain Section */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              Why IdentiChain?
+            </h2>
+            <p className="text-xl text-slate-300/80">
+              The future of digital identity is here. Experience the power of self-sovereign identity.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-700/40">
+                <ShieldIcon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Complete Privacy Control</h3>
+              <p className="text-slate-300/80">
+                You own your data completely. No central authority can access, modify, or revoke your identity without your explicit consent.
+              </p>
+            </div>
+
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-700/40">
+                <LockIcon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Zero-Knowledge Verification</h3>
+              <p className="text-slate-300/80">
+                Prove your credentials without revealing sensitive information. Verify your age without showing your birth date.
+              </p>
+            </div>
+
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-700/40">
+                <NetworkIcon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Interoperable & Portable</h3>
+              <p className="text-slate-300/80">
+                Your identity works across all platforms and services. No more creating new accounts everywhere you go.
+              </p>
+            </div>
+
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-orange-700/40">
+                <LightningIcon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Instant Verification</h3>
+              <p className="text-slate-300/80">
+                Verify credentials instantly without waiting for third-party verification. Blockchain ensures immediate trust.
+              </p>
+            </div>
+
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-700/40">
+                <PersonIcon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">User-Centric Design</h3>
+              <p className="text-slate-300/80">
+                Built for users, by users. Simple, intuitive interface that puts you in complete control of your digital identity.
+              </p>
+            </div>
+
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-teal-600 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-teal-700/40">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Tamper-Proof Security</h3>
+              <p className="text-slate-300/80">
+                Immutable blockchain records ensure your credentials cannot be forged or altered. Cryptographic security at its finest.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Team Section */}
       <section className="py-20 px-4 bg-slate-900/40 border-t border-slate-800">
         <div className="max-w-6xl mx-auto">
@@ -231,6 +312,138 @@ export const Landing: React.FC = () => {
             <LightningIcon className="w-6 h-6" />
             <span>Access Government Portal</span>
           </Link>
+        </div>
+      </section>
+
+      {/* Who Can Use Section */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              Who Can Use IdentiChain?
+            </h2>
+            <p className="text-xl text-slate-300/80">
+              IdentiChain serves diverse sectors with secure, verifiable digital identity solutions.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-700/40">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 114 0 2 2 0 01-4 0zm8 0a2 2 0 114 0 2 2 0 01-4 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-blue-400">Government Agencies</h3>
+              <ul className="text-slate-300/80 space-y-2">
+                <li>• Issue national ID credentials</li>
+                <li>• Verify citizen identities</li>
+                <li>• Digital voting systems</li>
+                <li>• Social welfare programs</li>
+                <li>• Tax and benefits verification</li>
+              </ul>
+            </div>
+
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-green-700/40">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-green-400">Telecommunications</h3>
+              <ul className="text-slate-300/80 space-y-2">
+                <li>• SIM card registration</li>
+                <li>• Customer identity verification</li>
+                <li>• Fraud prevention</li>
+                <li>• Age verification for services</li>
+                <li>• Compliance with regulations</li>
+              </ul>
+            </div>
+
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-purple-700/40">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-purple-400">Financial Services</h3>
+              <ul className="text-slate-300/80 space-y-2">
+                <li>• KYC/AML compliance</li>
+                <li>• Account opening verification</li>
+                <li>• Loan application processes</li>
+                <li>• Anti-fraud measures</li>
+                <li>• Cross-border transactions</li>
+              </ul>
+            </div>
+
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60">
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-red-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-orange-700/40">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-orange-400">Healthcare</h3>
+              <ul className="text-slate-300/80 space-y-2">
+                <li>• Patient identity verification</li>
+                <li>• Medical record access</li>
+                <li>• Prescription verification</li>
+                <li>• Insurance claim processing</li>
+                <li>• Telemedicine authentication</li>
+              </ul>
+            </div>
+
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60">
+              <div className="w-16 h-16 bg-gradient-to-r from-teal-600 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-teal-700/40">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-teal-400">Education</h3>
+              <ul className="text-slate-300/80 space-y-2">
+                <li>• Student identity verification</li>
+                <li>• Digital certificates</li>
+                <li>• Online exam authentication</li>
+                <li>• Academic record verification</li>
+                <li>• Scholarship applications</li>
+              </ul>
+            </div>
+
+            <div className="bg-slate-900/60 p-8 rounded-xl shadow-lg border border-slate-800/60">
+              <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-indigo-700/40">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-indigo-400">Enterprise</h3>
+              <ul className="text-slate-300/80 space-y-2">
+                <li>• Employee identity management</li>
+                <li>• Access control systems</li>
+                <li>• Supply chain verification</li>
+                <li>• Partner authentication</li>
+                <li>• Compliance reporting</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-16 text-center">
+            <div className="bg-gradient-to-r from-indigo-600/20 to-purple-600/20 p-8 rounded-xl border border-indigo-500/30">
+              <h3 className="text-2xl font-bold mb-4 text-white">Ready to Get Started?</h3>
+              <p className="text-slate-300/80 mb-6 max-w-2xl mx-auto">
+                Join thousands of organizations already using IdentiChain to secure their digital identity infrastructure.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/government" className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-all">
+                  Government Portal
+                </Link>
+                <Link to="/telecommunication" className="border-2 border-indigo-400/50 text-indigo-200 px-8 py-3 rounded-lg font-semibold hover:bg-indigo-500/10 transition-colors">
+                  Telecom Portal
+                </Link>
+                <Link to="/user-registration" className="border-2 border-green-400/50 text-green-200 px-8 py-3 rounded-lg font-semibold hover:bg-green-500/10 transition-colors">
+                  User Registration
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
