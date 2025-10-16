@@ -29,7 +29,7 @@ class EmailService {
     };
 
     if (config.auth.user && config.auth.pass) {
-      this.transporter = nodemailer.createTransporter(config);
+      this.transporter = nodemailer.createTransport(config);
     } else {
       console.warn('Email service not configured. Set SMTP_USER and SMTP_PASS environment variables.');
     }

@@ -38,7 +38,7 @@ export function UserRegistration() {
       setWalletAddress(address);
 
       // Check if user is already registered
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'}/api/user/${address}`);
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://chainid.onrender.com'}/api/user/${address}`);
       const data = await response.json();
       
       if (data.success && data.user) {
@@ -82,7 +82,7 @@ export function UserRegistration() {
         throw new Error('Please connect your wallet first');
       }
 
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'}/api/user/register`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://chainid.onrender.com'}/api/user/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

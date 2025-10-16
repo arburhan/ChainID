@@ -314,7 +314,7 @@ export const Government: React.FC = () => {
       let accessAddress = CONTRACT_ADDRESSES.ACCESS_CONTROL;
       if (!accessAddress || !ethers.isAddress(accessAddress)) {
         try {
-          const baseURL = (import.meta as any).env.VITE_BACKEND_URL || 'http://localhost:4000';
+          const baseURL = (import.meta as any).env.VITE_BACKEND_URL || 'https://chainid.onrender.com';
           const { data } = await axios.get(`${baseURL}/api/contracts/addresses`);
           accessAddress = data?.addresses?.accessControl || '';
         } catch (e) {
@@ -378,7 +378,7 @@ export const Government: React.FC = () => {
       let accessAddress = CONTRACT_ADDRESSES.ACCESS_CONTROL;
       if (!accessAddress || !ethers.isAddress(accessAddress)) {
         try {
-          const baseURL = (import.meta as any).env.VITE_BACKEND_URL || 'http://localhost:4000';
+          const baseURL = (import.meta as any).env.VITE_BACKEND_URL || 'https://chainid.onrender.com';
           const { data } = await axios.get(`${baseURL}/api/contracts/addresses`);
           accessAddress = data?.addresses?.accessControl || '';
         } catch { }

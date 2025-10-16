@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { ethers } from 'ethers'
 
-const baseURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
+const baseURL = import.meta.env.VITE_BACKEND_URL || 'https://chainid.onrender.com'
 export const api = axios.create({ baseURL })
 
 export async function register(address: string, profile: any) {
