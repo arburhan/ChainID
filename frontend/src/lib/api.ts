@@ -2,7 +2,9 @@ import axios from 'axios'
 import { ethers } from 'ethers'
 
 const baseURL = import.meta.env.VITE_BACKEND_URL || 'https://chainid.onrender.com'
-export const api = axios.create({ baseURL })
+// Ensure no trailing slash to prevent double slashes
+const cleanBaseURL = baseURL.replace(/\/$/, '')
+export const api = axios.create({ baseURL: cleanBaseURL })
 
 export async function register(address: string, profile: any) {
   // Ensure address is properly checksummed

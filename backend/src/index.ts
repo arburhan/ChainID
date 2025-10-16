@@ -21,10 +21,35 @@ mongoose.connect(process.env.MONGO_URI || "")
     console.error("MongoDB connection error:", err);
   });
 
+// CORS Configuration
+const corsOptions = {
+  origin: [
+    'https://identichain.netlify.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin'
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200 // For legacy browser support
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
+  next();
+});
 
 // Health check
 app.get('/health', (req, res) => {
@@ -32,6 +57,34 @@ app.get('/health', (req, res) => {
     status: 'OK',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Debug route to show available endpoints
+app.get('/debug/routes', (req, res) => {
+  res.json({
+    availableRoutes: [
+      'GET /health',
+      'GET /debug/routes',
+      'POST /api/register',
+      'POST /api/issueCredential', 
+      'POST /api/requestAccess',
+      'POST /api/consent',
+      'POST /api/verifyCredential',
+      'POST /api/verifyProfileHash',
+      'GET /api/audit/recent',
+      'GET /api/audit/by-address/:address',
+      'POST /api/user/register',
+      'GET /api/user/:walletAddress',
+      'GET /api/user/:walletAddress/credentials',
+      'GET /api/user/:walletAddress/access-requests',
+      'GET /api/contracts/addresses',
+      'POST /api/contracts/credential/issue',
+      'POST /api/contracts/access/request',
+      'POST /api/contracts/access/approve',
+      'POST /api/contracts/identity/create'
+    ],
+    timestamp: new Date().toISOString()
   });
 });
 
